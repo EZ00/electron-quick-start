@@ -1,0 +1,160 @@
+<div id="divTabs">
+  <!-- <span id="tab1"><span data-title="about:blank" data-id="0">about:blank </span><a href="#" data-id="0">x</a></span> -->
+</div>
+<div>
+  <input type="text" id="inputUrl" value="about:blank"/>
+  <button id="btnGo">Go</button>
+  <button id="btnNew">New</button>
+</div>
+<div>
+  <button id="btnExec">exec</button>
+  <button id="btnStart">start</button>
+</div>
+<div id="divWebPages">
+  <!-- <webview id="webPage1" src="about:blank" style="display:inline-block; width:100%;" data-id="0"></webview> -->
+</div>
+
+<script>
+const ipcRenderer = require('electron').ipcRenderer;
+ipcRenderer.on('ping', function(event, arg) {
+  console.log('pind',event,arg); // prints "pong"
+});
+// var webPages = [];
+// webPages.push(document.getElementById("webPage1"));
+// var tabs = [];
+// tabs.push(document.getElementById("tab1"));
+var divWebPages = document.getElementById("divWebPages");
+var divTabs = document.getElementById("divTabs");
+var currentPage = null;
+var setCurrentPage = function(page){
+  currentPage = page;
+  var currentId = currentPage.dataset.id;
+  for(var i=0;i<divTabs.children.length;i++){
+    // console.log("currentId:",currentId);
+    // console.log("divTabs.children[i].dataset.id:",divTabs.children[i].dataset.id);
+    if(currentId !== divTabs.children[i].dataset.id){
+      divTabs.children[i].setAttribute("style","background-color:rgb(222,222,222);")
+    }
+    else{
+      divTabs.children[i].setAttribute("style","background-color:rgb(255,255,255);")
+    }
+  }
+}
+var webPagesClass = function(){
+  // this.webPages = [];
+  // this.webPages.push(document.getElementById("webPage1"));
+  // this.tabs = [];
+  // this.tabs.push(document.getElementById("tab1"));
+  // this.divWebPages = document.getElementById("divWebPages");
+  // this.divTabs = document.getElementById("divTabs");
+  this.append = function(url){
+    var newPage = document.createElement("webview");
+    newPage.setAttribute("id","webPage"+(divTabs.children.length+1));
+    newPage.setAttribute("src",url);
+    newPage.setAttribute("style","display:inline-block; width:100%;");
+    newPage.setAttribute("data-id",divTabs.children.length);
+    newPage.setAttribute("preload","./inject.js");
+    newPage.addEventListener("dom-ready", function(){
+      this.newPage.openDevTools();
+    }.bind({newPage:newPage}));
+    for(var i=0;i<divTabs.children.length;i++){
+      divWebPages.children[i].setAttribute("style","display:none; width:100%;")
+    }
+
+    var newTab = document.createElement("span");
+    newTab.setAttribute("id","tab"+(divTabs.children.length+1));
+    newTab.setAttribute("data-id",divTabs.children.length);
+    newTab.setAttribute("style","background-color:rgb(255,255,255);");
+    var newTitle = document.createElement("span");
+    newTitle.innerText = "loading..."+" ";
+    newTitle.setAttribute("data-id",divTabs.children.length);
+    newTitle.setAttribute("data-title","loding...");
+    var newDel = document.createElement("a");
+    newDel.setAttribute("href","#");
+    newDel.setAttribute("data-id",divTabs.children.length);
+    newDel.innerText = "x";
+    newDel.addEventListener("click",function(e){
+      e.preventDefault();
+      var id = Number(e.target.dataset.id)+1;
+      // console.log("del id: ",id);
+      var thisTab = document.getElementById("tab"+id);
+      // console.log("del tab: ",thisTab);
+      var thisWebPage = document.getElementById("webPage"+id);
+      var firstId = divWebPages.children[0].getAttribute("id");
+      // console.log('firstId: ',firstId);
+      // console.log('"webPage"+id: ',"webPage"+id);
+      thisTab.remove();
+      thisWebPage.remove();
+      if(divWebPages.children.length === 0){
+        // check if this is the only one
+        currentPage = null;
+      }
+      else if(firstId === ("webPage"+id)){
+        // check if this is the first one
+        var nextPage = divWebPages.children[0];
+        nextPage.setAttribute("style","display:inline-block; width:100%;");
+        setCurrentPage(nextPage);
+      }
+      else{
+        // the same as this is the last one
+        var prePage = divWebPages.children[0];
+        prePage.setAttribute("style","display:inline-block; width:100%;");
+        setCurrentPage(prePage);
+      }
+    });
+    newTitle.addEventListener("click",function(e){
+      e.preventDefault();
+      var targetId = "webPage"+(Number(e.target.dataset.id)+1);
+      var targetWebPage = document.getElementById(targetId);
+      for(var i=0;i<divWebPages.children.length;i++){
+        if(targetId !== divWebPages.children[i].getAttribute("id")){
+          divWebPages.children[i].setAttribute("style","display:none; width:100%;");
+        }
+      }
+      targetWebPage.setAttribute("style","display:inline-block; width:100%;");
+      setCurrentPage(targetWebPage);
+    });
+    newTab.appendChild(newTitle);
+    newTab.appendChild(newDel);
+    // tabs.push(newTab);
+    divTabs.appendChild(newTab);
+    // webPages.push(newPage);
+    divWebPages.appendChild(newPage);
+    setCurrentPage(newPage);
+  }
+  this.append("about:blank");
+}
+var webPages = new webPagesClass;
+var inputUrl = document.getElementById("inputUrl");
+var webPage1 = document.getElementById("webPage1");
+var btnGo = document.getElementById("btnGo");
+var btnNew = document.getElementById("btnNew");
+var btnExec = document.getElementById("btnExec");
+var btnStart = document.getElementById("btnStart");
+btnGo.addEventListener("click",function(){
+  if(currentPage !== null){
+    currentPage.src = inputUrl.value;
+  }
+});
+btnNew.addEventListener("click",function(){
+  webPages.append(inputUrl.value);
+});
+btnExec.addEventListener("click",function(){
+  if(currentPage !== null){
+    currentPage.executeJavaScript("__aliTools.getZeroEffectProducts({"+
+  'orderBy: "time",'+
+  'orderModel:	"desc",'+
+  'selected:	0,'+
+  'statisticsType:"day",'+
+  'pageSize : 10,'+
+  'pageNO : 1,'+
+  'time : 170'+
+"});");
+  }
+});
+btnStart.addEventListener("click",function(){
+  if(currentPage !== null){
+    currentPage.executeJavaScript("__aliTools.send()");
+  }
+});
+</script>

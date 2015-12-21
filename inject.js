@@ -32,10 +32,10 @@ __myYoutubeTools={
     }
 }
 
+var ipcRenderer = require("electron").ipcRenderer;
 __aliTools={
-  send:function(){require("electron").ipcRenderer.send('ping', { windowUId: require("electron").remote.getCurrentWindow().id });},
+  send:function(){ipcRenderer.send('ping', { windowUId: require("electron").remote.getCurrentWindow().id });},
   getZeroEffectProducts: function(query){
-
     seajs.iuse("//i.alicdn.com/ida-mydata/common/bridge/bridge.js")(function(Bridge){
   		Bridge.Jquery.ajax({
   			type : 'POST',
@@ -55,6 +55,7 @@ __aliTools={
           else{
             console.log(data);
             // socket.emit("logZeroEffectProducts",data);
+            ipcRenderer.send('getZeroEffectProducts', data);
             if(this.query.pageNO*this.query.pageSize < data.total){
               this.query.pageNO += 1;
               __aliTools.getZeroEffectProducts(this.query);

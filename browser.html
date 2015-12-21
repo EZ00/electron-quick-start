@@ -1,5 +1,5 @@
 <div id="divTabs">
-  <!-- <span id="tab1"><span data-title="about:blank" data-id="0">about:blank </span><a href="#" data-id="0">x</a></span> -->
+  <!-- <span id="tab1" data-id="0"><span data-title="about:blank" data-id="0">about:blank </span><a href="#" data-id="0">x</a></span> -->
 </div>
 <div>
   <input type="text" id="inputUrl" value="about:blank"/>
@@ -7,18 +7,15 @@
   <button id="btnNew">New</button>
 </div>
 <div>
-  <button id="btnExec">exec</button>
-  <button id="btnStart">start</button>
+  <button id="btnGetZeroEffectProducts">getZeroEffectProducts</button>
+  <button id="btnSend">send</button>
+  <button id="btnDevTools">DevTools</button>
 </div>
 <div id="divWebPages">
   <!-- <webview id="webPage1" src="about:blank" style="display:inline-block; width:100%;" data-id="0"></webview> -->
 </div>
 
 <script>
-const ipcRenderer = require('electron').ipcRenderer;
-ipcRenderer.on('ping', function(event, arg) {
-  console.log('pind',event,arg); // prints "pong"
-});
 // var webPages = [];
 // webPages.push(document.getElementById("webPage1"));
 // var tabs = [];
@@ -54,9 +51,6 @@ var webPagesClass = function(){
     newPage.setAttribute("style","display:inline-block; width:100%;");
     newPage.setAttribute("data-id",divTabs.children.length);
     newPage.setAttribute("preload","./inject.js");
-    newPage.addEventListener("dom-ready", function(){
-      this.newPage.openDevTools();
-    }.bind({newPage:newPage}));
     for(var i=0;i<divTabs.children.length;i++){
       divWebPages.children[i].setAttribute("style","display:none; width:100%;")
     }
@@ -121,6 +115,13 @@ var webPagesClass = function(){
     // webPages.push(newPage);
     divWebPages.appendChild(newPage);
     setCurrentPage(newPage);
+    newPage.addEventListener("dom-ready", function(){
+      this.newTitle.setAttribute("data-title",this.newPage.getTitle());
+      this.newTitle.innerText = this.newPage.getTitle();
+    }.bind({newPage:newPage,newTitle:newTitle}));
+    newPage.addEventListener('new-window', function(e) {
+      webPages.append(e.url);
+    });
   }
   this.append("about:blank");
 }
@@ -129,8 +130,9 @@ var inputUrl = document.getElementById("inputUrl");
 var webPage1 = document.getElementById("webPage1");
 var btnGo = document.getElementById("btnGo");
 var btnNew = document.getElementById("btnNew");
-var btnExec = document.getElementById("btnExec");
-var btnStart = document.getElementById("btnStart");
+var btnGetZeroEffectProducts = document.getElementById("btnGetZeroEffectProducts");
+var btnSend = document.getElementById("btnSend");
+var btnDevTools = document.getElementById("btnDevTools");
 btnGo.addEventListener("click",function(){
   if(currentPage !== null){
     currentPage.src = inputUrl.value;
@@ -139,7 +141,7 @@ btnGo.addEventListener("click",function(){
 btnNew.addEventListener("click",function(){
   webPages.append(inputUrl.value);
 });
-btnExec.addEventListener("click",function(){
+btnGetZeroEffectProducts.addEventListener("click",function(){
   if(currentPage !== null){
     currentPage.executeJavaScript("__aliTools.getZeroEffectProducts({"+
   'orderBy: "time",'+
@@ -152,9 +154,14 @@ btnExec.addEventListener("click",function(){
 "});");
   }
 });
-btnStart.addEventListener("click",function(){
+btnSend.addEventListener("click",function(){
   if(currentPage !== null){
     currentPage.executeJavaScript("__aliTools.send()");
+  }
+});
+btnDevTools.addEventListener("click",function(){
+  if(currentPage !== null){
+    currentPage.openDevTools();
   }
 });
 </script>

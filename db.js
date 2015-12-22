@@ -5,17 +5,17 @@ var state = {
   manager: null
 }
 
-var collectionClass = function(path){
-  this.path = path;
+var collectionClass = function(p){
+  this.path = p;
   this.findOne = function(){
 
   }
 }
 
-var dbClass = function(path){
-  this.path = path.normalize(path);
+var dbClass = function(p){
+  this.path = p;
   if(state.manager === null){
-    state.manager = new managerClass(path.normalize(this.path+".."));
+    state.manager = new managerClass(path.join(this.path,".."));
   }
   this.collection = function(colName){
     return new collectionClass(path.join(this.path,colName));
@@ -25,8 +25,10 @@ var dbClass = function(path){
   }
 }
 
-var managerClass = function(path){
-
+var managerClass = function(p){
+  console.log("Enter managerClass")
+  console.log(p);
+  console.log("Leave managerClass")
 }
 
 exports.connect = function(url) {

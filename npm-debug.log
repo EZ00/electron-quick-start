@@ -1,0 +1,68 @@
+0 info it worked if it ends with ok
+1 verbose cli [ 'D:\\Program Files\\nodejs\\node.exe',
+1 verbose cli   'D:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js',
+1 verbose cli   'install' ]
+2 info using npm@3.3.12
+3 info using node@v5.1.0
+4 silly loadCurrentTree Starting
+5 silly install loadCurrentTree
+6 silly install readLocalPackageData
+7 silly install normalizeTree
+8 silly loadCurrentTree Finishing
+9 silly loadIdealTree Starting
+10 silly install loadIdealTree
+11 silly cloneCurrentTree Starting
+12 silly install cloneCurrentTreeToIdealTree
+13 silly cloneCurrentTree Finishing
+14 silly loadShrinkwrap Starting
+15 silly install loadShrinkwrap
+16 silly loadShrinkwrap Finishing
+17 silly loadAllDepsIntoIdealTree Starting
+18 silly install loadAllDepsIntoIdealTree
+19 silly fetchOtherPackageData globals@file:./globals.js
+20 silly cache add args [ 'globals@file:./globals.js', null ]
+21 verbose cache add spec globals@file:./globals.js
+22 silly cache add parsed spec Result {
+22 silly cache add   raw: 'globals@file:./globals.js',
+22 silly cache add   scope: null,
+22 silly cache add   name: 'globals',
+22 silly cache add   rawSpec: 'file:./globals.js',
+22 silly cache add   spec: 'D:\\Library\\nodejs\\electron-quick-start\\globals.js',
+22 silly cache add   type: 'local' }
+23 silly addLocalTarball shasum (computed) 258a38934f5cd1532051bb651321cff5c0e71fdf
+24 verbose addTmpTarball D:\Library\nodejs\electron-quick-start\globals.js not in flight; adding
+25 verbose addTmpTarball validating metadata from D:\Library\nodejs\electron-quick-start\globals.js
+26 verbose tar unpack D:\Library\nodejs\electron-quick-start\globals.js
+27 verbose tar unpacking to C:\Users\ADMINI~1\AppData\Local\Temp\npm-8060-58fd9bfd\unpack-8ca7d18bf6777d42a9eb546aead6c5c9
+28 silly gentlyRm C:\Users\ADMINI~1\AppData\Local\Temp\npm-8060-58fd9bfd\unpack-8ca7d18bf6777d42a9eb546aead6c5c9 is being purged
+29 verbose gentlyRm don't care about contents; nuking C:\Users\ADMINI~1\AppData\Local\Temp\npm-8060-58fd9bfd\unpack-8ca7d18bf6777d42a9eb546aead6c5c9
+30 silly gunzTarPerm modes [ '777', '666' ]
+31 error not a package D:\Library\nodejs\electron-quick-start\globals.js
+32 error addLocal Could not install D:\Library\nodejs\electron-quick-start\globals.js
+33 silly fetchPackageMetaData Error: ENOENT: no such file or directory, open 'C:\Users\ADMINI~1\AppData\Local\Temp\npm-8060-58fd9bfd\unpack-8ca7d18bf6777d42a9eb546aead6c5c9\package.json'
+33 silly fetchPackageMetaData     at Error (native)
+33 silly fetchPackageMetaData  error for globals@file:./globals.js { [Error: ENOENT: no such file or directory, open 'C:\Users\ADMINI~1\AppData\Local\Temp\npm-8060-58fd9bfd\unpack-8ca7d18bf6777d42a9eb546aead6c5c9\package.json']
+33 silly fetchPackageMetaData   errno: -4058,
+33 silly fetchPackageMetaData   code: 'ENOENT',
+33 silly fetchPackageMetaData   syscall: 'open',
+33 silly fetchPackageMetaData   path: 'C:\\Users\\ADMINI~1\\AppData\\Local\\Temp\\npm-8060-58fd9bfd\\unpack-8ca7d18bf6777d42a9eb546aead6c5c9\\package.json' }
+34 silly rollbackFailedOptional Starting
+35 silly rollbackFailedOptional Finishing
+36 silly runTopLevelLifecycles Starting
+37 silly runTopLevelLifecycles Finishing
+38 silly install printInstalled
+39 verbose stack Error: ENOENT: no such file or directory, open 'C:\Users\ADMINI~1\AppData\Local\Temp\npm-8060-58fd9bfd\unpack-8ca7d18bf6777d42a9eb546aead6c5c9\package.json'
+39 verbose stack     at Error (native)
+40 verbose cwd D:\Library\nodejs\electron-quick-start
+41 error Windows_NT 6.1.7601
+42 error argv "D:\\Program Files\\nodejs\\node.exe" "D:\\Program Files\\nodejs\\node_modules\\npm\\bin\\npm-cli.js" "install"
+43 error node v5.1.0
+44 error npm  v3.3.12
+45 error path C:\Users\ADMINI~1\AppData\Local\Temp\npm-8060-58fd9bfd\unpack-8ca7d18bf6777d42a9eb546aead6c5c9\package.json
+46 error code ENOENT
+47 error errno -4058
+48 error syscall open
+49 error enoent ENOENT: no such file or directory, open 'C:\Users\ADMINI~1\AppData\Local\Temp\npm-8060-58fd9bfd\unpack-8ca7d18bf6777d42a9eb546aead6c5c9\package.json'
+49 error enoent This is most likely not a problem with npm itself
+49 error enoent and is related to npm not being able to find a file.
+50 verbose exit [ -4058, true ]

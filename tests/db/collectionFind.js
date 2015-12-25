@@ -6,4 +6,4 @@ const db = require(path.join(p_globals._dirname,"../../db.js"));
 db.connect(env.db_path);
 
 var collectionTest = db.collection("test");
-collectionTest.insert({"name":"test","number":1,"null":null});
+collectionTest.find();

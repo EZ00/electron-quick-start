@@ -1,5 +1,5 @@
 var path = require("path");
-var fs = require("fs");
+var fse = require("fs-extra");
 var crypto = require('crypto');
 var algo = 'sha256';
 
@@ -12,26 +12,58 @@ var cursorClass = function(p){
 }
 var collectionClass = function(p){
   this.path = p;
+  this.docsPath = path.join(this.path,"docs");
+  this.docs = [];
+  this.inited = false;
+  fse.readdir(this.docsPath,function(err,files){
+    //console.log(files);
+    // this.count = files.length;
+    var count = 0;
+    for(var i=0;i<files.length;i++){
+      var filePath = path.join(this.docsPath,files[i]);
+      fse.readJson(filePath, function(err, packageObj) {
+        if(err){
+          console.log(err);
+        }
+        else{
+          this.docs.push(packageObj);
+          // console.log(packageObj);
+          count += 1;
+          console.log(files.length,"===",count);
+          if(files.length===count){
+            // console.log(this.docs);
+            this.inited = true;
+          }
+        }
+      }.bind(this))
+    }
+  }.bind(this))
   this.insert = function(newDoc){
     var jsonString = JSON.stringify(newDoc);
     var shasum = crypto.createHash(algo);
     shasum.update(jsonString);
     var d = shasum.digest('hex');
-    var newDocPath = path.join(this.path,d);
-    fs.writeFile(newDocPath, jsonString, function (err) {
-      if (err) {console.log(err)};
-      console.log('It\'s saved!',this.path);
+    var newDocPath = path.join(this.docsPath,d);
+    fse.outputFile(newDocPath, jsonString,{"flag":"wx"},function (err) {
+      if (err) {
+        console.log(err);
+      }
+      else{
+        console.log('It\'s saved!',newDocPath);
+        this.docs.push(newDoc);
+      }
     });
   };
   this.findOne = function(){
   };
-  this.find = function(){
+  this.find = function(query){
     return new cursorClass(p);
   };
   this.update = function(){};
   this.findAndModify = function(){};
   this.remove = function(){};
-  this.createIndex = function(){};
+  this.createIndex = function(){
+  };
 }
 
 var dbClass = function(p){

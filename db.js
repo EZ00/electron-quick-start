@@ -4,7 +4,7 @@ var crypto = require('crypto');
 var algo = 'sha256';
 
 var state = {
-  db: null,
+  db: {},
   manager: null
 }
 var cursorClass = function(p){
@@ -122,6 +122,8 @@ var managerClass = function(p){
 }
 
 exports.connect = function(url) {
+  var parts = path.parse(url);
+
   state.db = new dbClass(url);
   console.log("connected "+url);
 }

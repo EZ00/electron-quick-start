@@ -5,7 +5,37 @@ var algo = 'sha256';
 
 var state = {
   db: {},
-  manager: null
+  manager: null,
+  loaded: false
+}
+var loadDocs = function(collectionName,docsPath,cb){
+  fse.readdir(docsPath,function(err,files){
+    if(err){
+      cb(err)
+    }
+    else{
+      var count = 0;
+      state.db[collectionName] = [];
+      for(var i=0;i<files.length;i++){
+        var filePath = path.join(this.docsPath,files[i]);
+        fse.readJson(filePath, function(err, packageObj) {
+          if(err){
+            this.cb(err);
+          }
+          else{
+            state.db[collectionName].push(packageObj);
+            // console.log(packageObj);
+            count += 1;
+            console.log(files.length,"===",count);
+            if(files.length===count){
+              // console.log(this.docs);
+              this.cb(null);
+            }
+          }
+        }.bind(this))
+      }
+    }
+  }.bind({'docsPath':docsPath,'cb':cb}))
 }
 var cursorClass = function(p){
   var toArray = function(){};
@@ -110,8 +140,8 @@ var dbClass = function(p){
   this.close = function(cb){
     cb(null,null);
   }
-  this.collectionNames();
-  this.collectionPaths();
+  // this.collectionNames();
+  // this.collectionPaths();
 }
 
 var managerClass = function(p){
@@ -123,8 +153,41 @@ var managerClass = function(p){
 
 exports.connect = function(url) {
   var parts = path.parse(url);
-
-  state.db = new dbClass(url);
+  console.log(parts);
+  if(parts.ext !== ".db"){
+    console.log("error: database name should end with .db");
+  }
+  //load all collections from this db
+  fse.readdir(url,function(err,files){
+    if(err){
+      console.error(err);
+    }
+    else{
+      // console.log(files);
+      var colCount = 0;
+      for(var i=0;i<files.length;i++){
+        var colParts = path.parse(files[i]);
+        if(colParts.ext === ".col"){
+          var docsPath = path.join(url,files[i],"docs");
+          // console.log(i);
+          loadDocs(colParts.name,docsPath,function(err){
+            if(err){
+              console.error(err);
+            }
+            else{
+              colCount += 1;
+              if(colCount === files.length){
+                state.loaded = true;
+              }
+            }
+          });
+          // console.log(docsPath);
+        }
+      }
+      // return files;
+    }
+  })
+  // state.db = new dbClass(url);
   console.log("connected "+url);
 }
 

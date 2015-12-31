@@ -23,8 +23,8 @@
   },
   "homepage": "https://github.com/atom/electron-quick-start#readme",
   "dependencies": {
-      "p_globals": "file:local_modules/p_globals"
+    "p_globals": "file:local_modules/p_globals",
+    "underscore": "^1.8.3"
   },
-  "devDependencies": {
-  }
+  "devDependencies": {}
 }

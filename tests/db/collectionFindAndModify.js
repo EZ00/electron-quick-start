@@ -5,8 +5,14 @@ const db = require(path.join(p_globals._dirname,"../../db.js"));
 
 db.connect(env.db_path,function(){
   var collectionTest = db.collection("test");
-  collectionTest.find().toArray(function(err,docs){
-    console.log(docs);
+  collectionTest.findAndModify({'number':200}, [], {'$set':{'null':0}}, {},function(err,insertedDoc){
+    if(err){
+      console.log(err);
+    }
+    else{
+      console.log(insertedDoc);
+    }
   });
 });
+
 process.stdin.resume();

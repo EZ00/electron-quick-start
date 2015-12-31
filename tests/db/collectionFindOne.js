@@ -5,8 +5,11 @@ const db = require(path.join(p_globals._dirname,"../../db.js"));
 
 db.connect(env.db_path,function(){
   var collectionTest = db.collection("test");
-  collectionTest.find().toArray(function(err,docs){
-    console.log(docs);
+  collectionTest.findOne({"number":100},function(err,doc){
+    if(err){console.error(err);}
+    else{
+      console.log(doc);
+    }
   });
 });
 process.stdin.resume();

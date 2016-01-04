@@ -199,6 +199,7 @@ var managerClass = function(p){
 }
 
 exports.connect = function(url,cb) {
+  var cb = cb || function(){};
   var parts = path.parse(url);
   console.log(parts);
   if(parts.ext !== ".db"){
@@ -209,7 +210,7 @@ exports.connect = function(url,cb) {
   //load all collections from this db
   fse.readdir(url,function(err,files){
     if(err){
-      this.cb(err);
+      cb(err);
     }
     else{
       console.log(files);
@@ -221,23 +222,23 @@ exports.connect = function(url,cb) {
           console.log(i);
           loadDocs(colParts.name,docsPath,function(err){
             if(err){
-              this.cb(err);
+              cb(err);
             }
             else{
               colCount += 1;
               console.log(colCount,files.length);
               if(colCount === files.length){
                 state.loaded = true;
-                this.cb(null);
+                cb(null);
               }
             }
-          }.bind(this));
+          });
           // console.log(docsPath);
         }
       }
       // return files;
     }
-  }.bind({"cb":cb}))
+  })
   // state.db = new dbClass(url);
 }
 

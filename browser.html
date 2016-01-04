@@ -10,6 +10,7 @@
   <button id="btnGetZeroEffectProducts">getZeroEffectProducts</button>
   <button id="btnSend">send</button>
   <button id="btnDevTools">DevTools</button>
+  <button id="btnGetIp">getIp</button>
 </div>
 <div id="divWebPages">
   <!-- <webview id="webPage1" src="about:blank" style="display:inline-block; width:100%;" data-id="0"></webview> -->
@@ -133,6 +134,7 @@ var btnNew = document.getElementById("btnNew");
 var btnGetZeroEffectProducts = document.getElementById("btnGetZeroEffectProducts");
 var btnSend = document.getElementById("btnSend");
 var btnDevTools = document.getElementById("btnDevTools");
+var btnGetIp = document.getElementById("btnGetIp");
 btnGo.addEventListener("click",function(){
   if(currentPage !== null){
     currentPage.src = inputUrl.value;
@@ -163,5 +165,13 @@ btnDevTools.addEventListener("click",function(){
   if(currentPage !== null){
     currentPage.openDevTools();
   }
+});
+btnGetIp.addEventListener("click",function(){
+  var request = require('request');
+  request('http://www.ip-api.com/json/?fields=countryCode,query,status', function (error, response, body) {
+    if (!error && response.statusCode == 200) {
+      console.log(body) // Show the HTML for the Google homepage.
+    }
+  })
 });
 </script>

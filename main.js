@@ -5,7 +5,7 @@ const electron = require('electron');
 const app = electron.app;  // Module to control application life.
 const BrowserWindow = electron.BrowserWindow;  // Module to create native browser window.
 
-db.connect(env.db_path);
+// db.connect(env.db_path);
 const ipcMain = require('electron').ipcMain;
 ipcMain.on('ping', function(event, arg) {
   console.log('ping',event,arg); // prints "pong"

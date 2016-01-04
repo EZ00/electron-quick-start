@@ -23,7 +23,9 @@
   },
   "homepage": "https://github.com/atom/electron-quick-start#readme",
   "dependencies": {
+    "fs-extra": "^0.26.3",
     "p_globals": "file:local_modules/p_globals",
+    "request": "^2.67.0",
     "underscore": "^1.8.3"
   },
   "devDependencies": {}

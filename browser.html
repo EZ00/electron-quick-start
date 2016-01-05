@@ -1,3 +1,7 @@
+<head>
+  <meta charset="UTF-8">
+</head>
+<body>
 <div id="divTabs">
   <!-- <span id="tab1" data-id="0"><span data-title="about:blank" data-id="0">about:blank </span><a href="#" data-id="0">x</a></span> -->
 </div>
@@ -15,8 +19,10 @@
 <div id="divWebPages">
   <!-- <webview id="webPage1" src="about:blank" style="display:inline-block; width:100%;" data-id="0"></webview> -->
 </div>
-
+</body>
 <script>
+const env = require("./env.js");
+const db = require("./db.js");
 // var webPages = [];
 // webPages.push(document.getElementById("webPage1"));
 // var tabs = [];
@@ -135,43 +141,73 @@ var btnGetZeroEffectProducts = document.getElementById("btnGetZeroEffectProducts
 var btnSend = document.getElementById("btnSend");
 var btnDevTools = document.getElementById("btnDevTools");
 var btnGetIp = document.getElementById("btnGetIp");
-btnGo.addEventListener("click",function(){
-  if(currentPage !== null){
-    currentPage.src = inputUrl.value;
+db.connect(env.mongo_url, function(err) {
+  if (err) {
+    console.log('Unable to connect to Mongo.')
+    process.exit(1)
   }
-});
-btnNew.addEventListener("click",function(){
-  webPages.append(inputUrl.value);
-});
-btnGetZeroEffectProducts.addEventListener("click",function(){
-  if(currentPage !== null){
-    currentPage.executeJavaScript("__aliTools.getZeroEffectProducts({"+
-  'orderBy: "time",'+
-  'orderModel:	"desc",'+
-  'selected:	0,'+
-  'statisticsType:"day",'+
-  'pageSize : 10,'+
-  'pageNO : 1,'+
-  'time : 170'+
-"});");
+  else {
+    console.log("connected to Mongo");
+    btnGo.addEventListener("click",function(){
+      if(currentPage !== null){
+        currentPage.src = inputUrl.value;
+      }
+    });
+    btnNew.addEventListener("click",function(){
+      webPages.append(inputUrl.value);
+    });
+    btnGetZeroEffectProducts.addEventListener("click",function(){
+      if(currentPage !== null){
+        currentPage.executeJavaScript("__aliTools.getZeroEffectProducts({"+
+      'orderBy: "time",'+
+      'orderModel:	"desc",'+
+      'selected:	0,'+
+      'statisticsType:"day",'+
+      'pageSize : 10,'+
+      'pageNO : 1,'+
+      'time : 170'+
+    "});");
+      }
+    });
+    btnSend.addEventListener("click",function(){
+      if(currentPage !== null){
+        currentPage.executeJavaScript("__aliTools.send()");
+      }
+    });
+    btnDevTools.addEventListener("click",function(){
+      if(currentPage !== null){
+        currentPage.openDevTools();
+      }
+    });
+    btnGetIp.addEventListener("click",function(){
+      var request = require('request');
+      request('http://www.ip-api.com/json/?fields=countryCode,query,status', function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+          // console.log(body);
+          var geoipData = JSON.parse(body);
+          console.log(geoipData);
+          if(geoipData.status = "success"){
+            if(geoipData.countryCode === "CN"){
+              console.log("ip地址在中国");
+            }
+            else{
+              var pip = db.collection("pip");
+              pip.findOne({"ip" : geoipData.query},function(err,doc){
+                if(err){
+                  console.error(err);
+                }
+                else{
+                  console.log(doc.em);
+                }
+              })
+            }
+          }
+          else{
+            console.error("get geoip failed!");
+          }
+        }
+      })
+    });
   }
-});
-btnSend.addEventListener("click",function(){
-  if(currentPage !== null){
-    currentPage.executeJavaScript("__aliTools.send()");
-  }
-});
-btnDevTools.addEventListener("click",function(){
-  if(currentPage !== null){
-    currentPage.openDevTools();
-  }
-});
-btnGetIp.addEventListener("click",function(){
-  var request = require('request');
-  request('http://www.ip-api.com/json/?fields=countryCode,query,status', function (error, response, body) {
-    if (!error && response.statusCode == 200) {
-      console.log(body) // Show the HTML for the Google homepage.
-    }
-  })
 });
 </script>

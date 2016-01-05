@@ -1,6 +1,6 @@
 var env = require('../env');
 var database = require('../db');
-// var ObjectID = require('mongodb').ObjectID;
+var ObjectID = require('mongodb').ObjectID;
 var events = require('events');
 var bCrypt = require('bcrypt-nodejs');
 var __ = require('underscore');
@@ -293,7 +293,7 @@ Base.prototype = {
     done = done || noop;
     var objectId = new ObjectID(id);
     doc.timeModified = new Date();
-    this.collection.update({_id:objectId},{'$set':doc},function(err,count,result){
+    this.collection.update({_id:objectId},{$set:doc},function(err,count,result){
       console.log('Base.js updateOneById');
       console.log(err);
       console.log(count);
@@ -306,7 +306,7 @@ Base.prototype = {
     done = done || noop;
     doc.timeModified = new Date();
     // the doc here says collection.update has 3 params https://mongodb.github.io/node-mongodb-native/markdown-docs/insert.html#update
-    this.collection.findAndModify({id:id},[],{'$set':doc},{},function(err,originalDoc){
+    this.collection.findAndModify({id:id},[],{$set:doc},{},function(err,originalDoc){
       // console.log('Base.js updateOneByLocalId');
       // console.log(err);
       // console.log(count);

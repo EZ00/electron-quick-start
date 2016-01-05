@@ -5,7 +5,6 @@ const electron = require('electron');
 const app = electron.app;  // Module to control application life.
 const BrowserWindow = electron.BrowserWindow;  // Module to create native browser window.
 
-// db.connect(env.db_path);
 const ipcMain = require('electron').ipcMain;
 ipcMain.on('ping', function(event, arg) {
   console.log('ping',event,arg); // prints "pong"
@@ -43,25 +42,36 @@ app.on('window-all-closed', function() {
   }
 });
 
+
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 app.on('ready', function() {
-  // Create the browser window.
-  mainWindow = new BrowserWindow({width: 800, height: 600});
+  db.connect(env.mongo_url, function(err) {
+    if (err) {
+      console.log('Unable to connect to Mongo.')
+      process.exit(1)
+    }
+    else {
+      console.log("connected to Mongo");
+      // Create the browser window.
+      mainWindow = new BrowserWindow({width: 800, height: 600});
 
-  // and load the index.html of the app.
-  // mainWindow.loadURL('file://' + __dirname + '/index.html');
-  // mainWindow.loadURL('http://ip138.com');
-  mainWindow.loadURL('file://'+__dirname+'/browser.html');
+      // and load the index.html of the app.
+      // mainWindow.loadURL('file://' + __dirname + '/index.html');
+      // mainWindow.loadURL('http://ip138.com');
+      mainWindow.loadURL('file://'+__dirname+'/browser.html');
 
-  // Open the DevTools.
-  // mainWindow.webContents.openDevTools();
+      // Open the DevTools.
+      // mainWindow.webContents.openDevTools();
 
-  // Emitted when the window is closed.
-  mainWindow.on('closed', function() {
-    // Dereference the window object, usually you would store windows
-    // in an array if your app supports multi windows, this is the time
-    // when you should delete the corresponding element.
-    mainWindow = null;
+      // Emitted when the window is closed.
+      mainWindow.on('closed', function() {
+        // Dereference the window object, usually you would store windows
+        // in an array if your app supports multi windows, this is the time
+        // when you should delete the corresponding element.
+        mainWindow = null;
+      });
+    }
   });
 });

@@ -21,8 +21,10 @@
 </div>
 </body>
 <script>
-const env = require("./env.js");
-const db = require("./db.js");
+var path = require("path");
+const p_globals = require("p_globals");
+const env = require(path.join(p_globals._dirname,"../../env.js"));
+const db = require(path.join(p_globals._dirname,"../../db.js"));
 // var webPages = [];
 // webPages.push(document.getElementById("webPage1"));
 // var tabs = [];
@@ -44,6 +46,15 @@ var setCurrentPage = function(page){
     }
   }
 }
+var parseUrl = function(url){
+  var urlParts = url.split(":");
+  // console.log(urlParts);
+  if(urlParts[0] === "dashboard"){
+    url = path.join(p_globals._dirname,"../../views/"+urlParts[1]+".html");
+    // console.log(url);
+  }
+  return url;
+}
 var webPagesClass = function(){
   // this.webPages = [];
   // this.webPages.push(document.getElementById("webPage1"));
@@ -52,6 +63,7 @@ var webPagesClass = function(){
   // this.divWebPages = document.getElementById("divWebPages");
   // this.divTabs = document.getElementById("divTabs");
   this.append = function(url){
+    url = parseUrl(url);
     var newPage = document.createElement("webview");
     newPage.setAttribute("id","webPage"+(divTabs.children.length+1));
     newPage.setAttribute("src",url);
@@ -150,7 +162,7 @@ db.connect(env.mongo_url, function(err) {
     console.log("connected to Mongo");
     btnGo.addEventListener("click",function(){
       if(currentPage !== null){
-        currentPage.src = inputUrl.value;
+        currentPage.src = parseUrl(inputUrl.value);
       }
     });
     btnNew.addEventListener("click",function(){

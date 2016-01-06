@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>keywords</title>
+  </head>
+  <body>
+    <h1>关键词管理</h1>
+    <div>
+      <div>
+        <span>关键词：</span>
+        <input id="inputKw"></input>
+      </div>
+      <div>
+        <span>中文：</span>
+        <input id="inputZh"></input>
+      </div>
+      <div>
+        <input type="checkbox" id="inputIsTarget" checked="checked">是否目标关键词</input>
+      </div>
+      <div>
+        <span>标签(逗号分隔)</span>
+        <input id="inputTags"></input>
+      </div>
+      <div>
+        <span>产品ID(逗号分隔)</span>
+        <input id="inputProductIds"></input>
+      </div>
+      <div>
+        <span>网址(逗号分隔)</span>
+        <input id="inputSites"></input>
+      </div>
+      <div>
+        <button id="btnCreate">创建</button>
+      </div>
+    </div>
+    <script>
+      var inputKw = document.getElementById("inputKw");
+      var inputZh = document.getElementById("inputZh");
+      var inputIsTarget = document.getElementById("inputIsTarget");
+      var inputTags = document.getElementById("inputTags");
+      var inputProductIds = document.getElementById("inputProductIds");
+      var inputSites = document.getElementById("inputSites");
+      var btnCreate = document.getElementById("btnCreate");
+      var getKeyword = function(){
+        var kw = {};
+        kw.en = inputKw.value.trim();
+        kw.zh = inputZh.value.trim();
+        kw.isTarget = inputIsTarget.checked;
+        kw.tags = [];
+        var tags = inputTags.value.trim();
+        if(tags !== ""){
+          tags.split(",").forEach(function(tag, index, arr){
+            var trimed = tag.trim();
+            if(trimed !== ""){
+              kw.tags.push(trimed);
+            }
+          })
+        }
+        kw.pids = [];
+        var pids = inputProductIds.value.trim();
+        if(pids !== ""){
+          pids.split(",").forEach(function(pid, index, arr){
+            var trimed = pid.trim();
+            if(trimed !== ""){
+              kw.pids.push(trimed);
+            }
+          })
+        }
+        kw.sites = [];
+        var sites = inputSites.value.trim();
+        if(sites !== ""){
+          sites.split(",").forEach(function(site, index, arr){
+            var trimed = site.trim();
+            if(trimed !== ""){
+              kw.sites.push(trimed);
+            }
+          })
+        }
+        return kw;
+      }
+      btnCreate.addEventListener("click",function(){
+        console.log(getKeyword());
+      });
+    </script>
+  </body>
+</html>

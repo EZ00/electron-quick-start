@@ -29,6 +29,7 @@ inits['string'] = function(prop,newDoc,done){
 
 var Base = function(colName,schema) {
   this.props = {};
+  this.events = new events.EventEmitter();
   this.db = database;
 	this.collectionName = colName;
   this.collection = this.db.collection(this.collectionName);
@@ -419,7 +420,21 @@ Base.prototype = {
         }
       })
     }
-  }
+  },
+  save: function(){
+    this.collection.insert(this.props,function(err,doc){
+      if(err){
+        console.error(err);
+      }
+      else{
+        this.events.emit("save",doc.doc);
+      }
+    })
+  },
+  on: function(name,cb){
+    this.events.on(name,cb);
+  },
+  emit: function(){}
 }
 
 module.exports = Base;

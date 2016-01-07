@@ -32,7 +32,8 @@ __myYoutubeTools={
     }
 }
 
-var ipcRenderer = require("electron").ipcRenderer;
+ipcRenderer = require("electron").ipcRenderer;
+
 __aliTools={
   send:function(){ipcRenderer.send('ping', { windowUId: require("electron").remote.getCurrentWindow().id });},
   getZeroEffectProducts: function(query){

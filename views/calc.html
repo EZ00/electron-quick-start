@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>重量计算</title>
+  </head>
+  <body>
+    <h1>重量计算</h1>
+    <div>
+      <div>
+        <span>外径：</span>
+        <input id="inputOD"></input>
+      </div>
+      <div>
+        <span>壁厚：</span>
+        <input id="inputWT"></input>
+      </div>
+      <div>
+        <span>长度：</span>
+        <input id="inputLength"></input>
+      </div>
+      <div>
+        <button id="btnCalc">计算</button>
+      </div>
+      <div>
+        <div>结果：<div>
+        <div>单支重量</div>
+        <div id="divWeight"></div>
+        <div>单支体积</div>
+        <div id="divVolume"></div>
+        <div>每吨支数</div>
+        <div id="divPcsPerTon"></div>
+      </div>
+    </div>
+    <script>
+      // var inputOD = document.getElementById("inputOD");
+      // var inputWT = document.getElementById("inputWT");
+      // var inputLength = document.getElementById("inputLength");
+      // var btnCalc = document.getElementById("btnCalc");
+      // var divWeight = document.getElementById("divWeight");
+      // var divVolume = document.getElementById("divVolume");
+      var calcWeight = function(){
+        var od = Number(inputOD.value);
+        var wt = Number(inputWT.value);
+        var length = Number(inputLength.value);
+        var weight = (od*4/3.14-wt)*wt*0.02466*length;
+        var volume = (od/1000)*(od/1000)*length;
+        var pcsPerTon = 1000 / weight;
+        divWeight.innerText = weight;
+        divVolume.innerText = volume;
+        divPcsPerTon.innerText = pcsPerTon;
+      }
+      btnCalc.addEventListener("click",calcWeight);
+    </script>
+  </body>
+</html>

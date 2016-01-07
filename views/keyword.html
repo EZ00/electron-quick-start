@@ -80,7 +80,9 @@
         return kw;
       }
       btnCreate.addEventListener("click",function(){
-        console.log(getKeyword());
+        var keyword = getKeyword();
+        console.log(keyword);
+        ipcRenderer.sendToHost("ping",keyword);
       });
     </script>
   </body>

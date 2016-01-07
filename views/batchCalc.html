@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>批量计算重量</title>
+  </head>
+  <body>
+    <h1>批量计算重量</h1>
+    <div>截面形状</div>
+    <select id="selectShape">
+      <option value="square">方形</option>
+      <option value="round">圆形</option>
+      <option value="rectangle">矩形</option>
+    </select>
+    <div id="divContainer">
+      <div class="pageShape" id="pageSquare">
+        <div>公式：</div>
+        <div>单支重量（千克） =(外径*4/3.14-壁厚)*壁厚*0.02466*长度</div>
+        <div>单支体积（立方米） = (外径/1000)<sup>2</sup>*长度</div>
+        <div>每吨支数 = 1000千克/单支重量</div>
+        <div>格式：外径X外径-壁厚-长度</div>
+        <div>例：19X19-0.85-5.8</div>
+      </div>
+      <div class="pageShape" id="pageRound" style="display:none;">
+        <div>公式：</div>
+        <div>单支重量（千克） =(外径-壁厚)*壁厚*0.02466*长度</div>
+        <div>单支体积（立方米） = 3.14*(外径/2/1000)<sup>2</sup>*长度</div>
+        <div>每吨支数 = 1000千克/单支重量</div>
+        <div>格式：外径-壁厚-长度</div>
+        <div>例：19-0.85-5.8</div>
+      </div>
+      <div class="pageShape" id="pageRectangle" style="display:none;">
+        <div>公式：</div>
+        <div>单支重量（千克） =((长+宽)*2/3.14-壁厚)*壁厚*0.02466*长度</div>
+        <div>单支体积（立方米） = (长*款/1000000)*长度</div>
+        <div>每吨支数 = 1000千克/单支重量</div>
+        <div>格式：长X宽-壁厚-长度</div>
+        <div>例：19X25-0.85-5.8</div>
+      </div>
+      <div>
+        <div>
+          <div>每行一个：</div>
+          <textarea style="width:100%;" rows="20" id="inputBatch"></textarea>
+        </div>
+        <div>
+          <button id="btnCalc">计算</button>
+        </div>
+        <div>
+          <div>结果：</div>
+          <div id="divCount"></div>
+          <div id="divResults"></div>
+        </div>
+      </div>
+    </div>
+    <script>
+      function capitalizeFirstLetter(string) {
+          return string.charAt(0).toUpperCase() + string.slice(1);
+      }
+      var inputBatch = document.getElementById("inputBatch");
+      var btnCalc = document.getElementById("btnCalc");
+      var divResults = document.getElementById("divResults");
+      var pageShapes = document.getElementsByClassName("pageShape");
+      var selectedShape;
+      var batchCalcSquare = function(){
+        // 19X19-0.85-10
+        // 38X38-0.9-30
+        var lines = inputBatch.value.split("\n");
+        var results = [];
+        for(var i=0;i<lines.length;i++){
+          var splited = lines[i].split("-");
+          if(splited.length !== 3){alert("格式错误！");return false;}
+          var od = Number(splited[0].split("X")[0]);
+          if(!od){alert("格式错误！");return false;}
+          var wt = Number(splited[1]);
+          if(!wt){alert("格式错误！");return false;}
+          var length = Number(splited[2]);
+          if(!length){alert("格式错误！");return false;}
+          var result = {};
+          result["weight"] = (od*4/3.14-wt)*wt*0.02466*length;
+          result["volume"] = (od/1000)*(od/1000)*length;
+          result["pcsPerTon"] = 1000 / result["weight"];
+          results.push(result);
+        }
+        // var tableResults = document.createElement("table");
+        // var tbody = document.createElement("tbody");
+        divCount.innerText = "规格数量："+lines.length;
+        divResults.innerHTML = "";
+        for(var i=0;i<results.length;i++){
+          var newDiv = document.createElement("div");
+          newDiv.innerText = "规格：" + lines[i] + "，" + "单支重量：" + results[i].weight + "，" + "每吨支数：" + results[i].pcsPerTon + "，" + "单支体积：" + results[i].volume;
+          divResults.appendChild(newDiv);
+        }
+      }
+      var batchCalcRound = function(){
+        console.log("batchCalcRound")
+      }
+      var batchCalcRectangle = function(){
+        console.log("batchCalcRectangle")
+      }
+      var batchCalc = function(){
+        if(selectedShape === "round"){
+          batchCalcRound();
+        }
+        else if(selectedShape === "square"){
+          batchCalcSquare();
+        }
+        else if(selectedShape === "rectangle"){
+          batchCalcRectangle();
+        }
+      }
+      selectShape.addEventListener("change",function(e){
+        selectedShape = e.target.value;
+        var elementId = "page"+capitalizeFirstLetter(selectedShape);
+        for(var i=0;i<pageShapes.length;i++){
+          pageShapes[i].setAttribute("style","display:none;");
+        }
+        var pageSelectedShape = document.getElementById(elementId);
+        pageSelectedShape.setAttribute("style","display:block;");
+      })
+      btnCalc.addEventListener("click",batchCalc);
+    </script>
+  </body>
+</html>

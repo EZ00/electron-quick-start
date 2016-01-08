@@ -27,8 +27,8 @@
         <input id="inputProductIds"></input>
       </div>
       <div>
-        <span>网址(逗号分隔)</span>
-        <input id="inputSites"></input>
+        <span>网址</span>
+        <input id="inputSite"></input>
       </div>
       <div>
         <button id="btnCreate">创建</button>
@@ -40,12 +40,14 @@
       var inputIsTarget = document.getElementById("inputIsTarget");
       var inputTags = document.getElementById("inputTags");
       var inputProductIds = document.getElementById("inputProductIds");
-      var inputSites = document.getElementById("inputSites");
+      var inputSite = document.getElementById("inputSite");
       var btnCreate = document.getElementById("btnCreate");
       var getKeyword = function(){
         var kw = {};
         kw.en = inputKw.value.trim();
+        if(!kw.en){alert("请输入英文！");return false;}
         kw.zh = inputZh.value.trim();
+        if(!kw.zh){alert("请输入中文！");return false;}
         kw.isTarget = inputIsTarget.checked;
         kw.tags = [];
         var tags = inputTags.value.trim();
@@ -67,22 +69,17 @@
             }
           })
         }
-        kw.sites = [];
-        var sites = inputSites.value.trim();
-        if(sites !== ""){
-          sites.split(",").forEach(function(site, index, arr){
-            var trimed = site.trim();
-            if(trimed !== ""){
-              kw.sites.push(trimed);
-            }
-          })
-        }
+        kw.site = inputSite.value.trim();
+        if(!kw.site){alert("请输入网址！");return false;}
         return kw;
       }
+      ipcRenderer.on('saved', function(event,doc,arg){
+        console.log("saved",event,doc,arg);
+      });
       btnCreate.addEventListener("click",function(){
         var keyword = getKeyword();
         console.log(keyword);
-        ipcRenderer.sendToHost("ping",keyword);
+        ipcRenderer.sendToHost("saveKeyword",keyword);
       });
     </script>
   </body>

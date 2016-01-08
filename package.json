@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/atom/electron-quick-start#readme",
   "dependencies": {
+    "bcrypt-nodejs": "0.0.3",
     "fs-extra": "^0.26.3",
     "mongodb": "^2.1.3",
     "p_globals": "file:local_modules/p_globals",

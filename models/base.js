@@ -421,15 +421,13 @@ Base.prototype = {
       })
     }
   },
-  save: function(){
+  save: function(cb){
+    var cb = cb || function(){};
+    console.log("enter save");
     this.collection.insert(this.props,function(err,doc){
-      if(err){
-        console.error(err);
-      }
-      else{
-        this.events.emit("save",doc.doc);
-      }
-    })
+      cb(err,this.props);
+      this.events.emit("save",this.props);
+    }.bind(this))
   },
   on: function(name,cb){
     this.events.on(name,cb);

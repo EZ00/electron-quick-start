@@ -12,8 +12,6 @@
 </div>
 <div>
   <button id="btnKeywordMan">关键词管理</button>
-  <button id="btnCalc">计算单支重量</button>
-  <button id="btnBatchCalc">批量计算重量</button>
   <button id="btnGetZeroEffectProducts">getZeroEffectProducts</button>
   <button id="btnSend">send</button>
   <button id="btnDevTools">DevTools</button>
@@ -29,9 +27,10 @@ const remote = require('electron').remote;
 const p_globals = require("p_globals");
 const env = require(path.join(p_globals._dirname,"../../env.js"));
 const db = remote.require(path.join(p_globals._dirname,"../../db.js"));
+const Keywords = remote.require(path.join(p_globals._dirname,"../../models/Keywords.js"));
 const ipcRenderer = require('electron').ipcRenderer;
 ipcRenderer.on('ping', function(event, arg) {
-  console.log('ping',event,arg); // prints "pong"
+  console.log('ping',event); // prints "pong"
 });
 var preloadMap = {};
 // preloadMap[] = path.join(p_globals._dirname,"../../injects/keyword.js")
@@ -78,7 +77,19 @@ var webPagesClass = function(){
     newPage.addEventListener('ipc-message', function(event) {
       var channel = event.channel;
       var doc = event.args[0];
-      console.log(channel,doc);
+      if(channel === "saveKeyword"){
+        console.log("channel === saveKeyword");
+        Keywords.props = doc;
+        Keywords.save(function(err,doc){
+          if(err){
+            console.error(err);
+          }
+          else{
+            console.log("saved",doc);
+            event.srcElement.send("saved",{"msg":"saved","msg1":"saved1"});
+          }
+        })
+      }
     });
     newPage.setAttribute("id","webPage"+(divTabs.children.length+1));
     newPage.setAttribute("src",url);
@@ -165,8 +176,8 @@ var webPage1 = document.getElementById("webPage1");
 var btnGo = document.getElementById("btnGo");
 var btnNew = document.getElementById("btnNew");
 var btnKeywordMan = document.getElementById("btnKeywordMan");
-var btnCalc = document.getElementById("btnCalc");
-var btnBatchCalc = document.getElementById("btnBatchCalc");
+// var btnCalc = document.getElementById("btnCalc");
+// var btnBatchCalc = document.getElementById("btnBatchCalc");
 var btnGetZeroEffectProducts = document.getElementById("btnGetZeroEffectProducts");
 var btnSend = document.getElementById("btnSend");
 var btnDevTools = document.getElementById("btnDevTools");
@@ -175,12 +186,12 @@ var btnGetIp = document.getElementById("btnGetIp");
 btnKeywordMan.addEventListener("click",function(){
   webPages.append("dashboard:keyword");
 });
-btnCalc.addEventListener("click",function(){
-  webPages.append("dashboard:calc");
-});
-btnBatchCalc.addEventListener("click",function(){
-  webPages.append("dashboard:batchCalc");
-});
+// btnCalc.addEventListener("click",function(){
+//   webPages.append("dashboard:calc");
+// });
+// btnBatchCalc.addEventListener("click",function(){
+//   webPages.append("dashboard:batchCalc");
+// });
 btnGo.addEventListener("click",function(){
   if(currentPage !== null){
     currentPage.src = parseUrl(inputUrl.value);

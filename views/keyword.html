@@ -34,6 +34,7 @@
         <button id="btnCreate">创建</button>
       </div>
     </div>
+    <div id="divTable"></div>
     <script>
       var inputKw = document.getElementById("inputKw");
       var inputZh = document.getElementById("inputZh");
@@ -73,8 +74,13 @@
         if(!kw.site){alert("请输入网址！");return false;}
         return kw;
       }
-      ipcRenderer.on('saved', function(event,doc,arg){
-        console.log("saved",event,doc,arg);
+      ipcRenderer.on('saved', function(event,docs){
+        console.log("saved",event,docs);
+        // for(var i=0;i<docs.length;i++){
+        //   for(prop in docs[i]){
+        //     console.log(i+": "+ prop + ":"+docs[i][prop]);
+        //   }
+        // }
       });
       btnCreate.addEventListener("click",function(){
         var keyword = getKeyword();

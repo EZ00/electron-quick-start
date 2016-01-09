@@ -80,13 +80,27 @@ var webPagesClass = function(){
       if(channel === "saveKeyword"){
         console.log("channel === saveKeyword");
         Keywords.props = doc;
-        Keywords.save(function(err,doc){
+        Keywords.save(function(err,docs){
           if(err){
             console.error(err);
           }
           else{
-            console.log("saved",doc);
-            event.srcElement.send("saved",{"msg":"saved","msg1":"saved1"});
+            // console.log("saved",docs);
+            var insertedDocs = [];
+            for(var i=0;i<docs.length;i++){
+              var insertedDoc = {};
+              for(prop in docs[i]){
+                if(prop === "_id"){
+                  insertedDoc[prop] = docs[i][prop].toString();
+                }
+                else{
+                  insertedDoc[prop] = docs[i][prop];
+                }
+                console.log(i+": "+ prop + ":"+docs[i][prop]);
+              }
+              insertedDocs.push(insertedDoc);
+            }
+            event.srcElement.send("saved",insertedDocs);
           }
         })
       }

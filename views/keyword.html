@@ -34,8 +34,9 @@
         <button id="btnCreate">创建</button>
       </div>
     </div>
-    <div id="divTable"></div>
+    <ol id="divKeywords"></ol>
     <script>
+    "use strict"
       var inputKw = document.getElementById("inputKw");
       var inputZh = document.getElementById("inputZh");
       var inputIsTarget = document.getElementById("inputIsTarget");
@@ -43,6 +44,161 @@
       var inputProductIds = document.getElementById("inputProductIds");
       var inputSite = document.getElementById("inputSite");
       var btnCreate = document.getElementById("btnCreate");
+      var divKeywords = document.getElementById("divKeywords");
+      var keywordsViewClass = function(parent){
+        this.parent = parent;
+        this.appendChildren = function(children){
+          for(var i=0;i<children.length;i++){
+            var NewKwCon = document.createElement("li");
+            NewKwCon.setAttribute("id",children[i]["_id"]);
+            var NewKw = document.createElement("ul");
+            NewKwCon.appendChild(NewKw);
+            var updateRankCon = document.createElement("li");
+            var updateRank = document.createElement("button");
+            updateRank.innerText = "更新排名";
+            updateRank.setAttribute("data-id",children[i]["_id"]);
+            updateRank.setAttribute("data-kw",children[i]["en"]);
+            updateRank.setAttribute("data-site",children[i]["site"]);
+            updateRank.addEventListener("click",function(e){
+              let doc = {};
+              doc._id = e.target.dataset["id"];
+              doc.kw = e.target.dataset["kw"];
+              doc.site = e.target.dataset["site"];
+              // console.log(doc);
+              ipcRenderer.sendToHost("updateRank",doc);
+            })
+            updateRankCon.appendChild(updateRank);
+            NewKw.appendChild(updateRankCon);
+            var en = document.createElement("li");
+            var zh = document.createElement("li");
+            var isTarget = document.createElement("li");
+            var site = document.createElement("li");
+            var tags = document.createElement("li");
+            var pids = document.createElement("li");
+            var pubs = document.createElement("ol");
+            pubs.setAttribute("id",children[i]["_id"]+"pubs");
+            en.innerText = "关键词: " + children[i]["en"];
+            en.setAttribute("id",children[i]["_id"]+"en");
+            zh.innerText = "中文: " + children[i]["zh"];
+            zh.setAttribute("id",children[i]["_id"]+"zh");
+            isTarget.innerText = "是否目标关键词: " + children[i]["isTarget"];
+            isTarget.setAttribute("id",children[i]["_id"]+"isTarget");
+            site.innerText = "网址: " + children[i]["site"];
+            site.setAttribute("id",children[i]["_id"]+"site");
+            tags.innerText = "标签: " + children[i]["tags"].join();
+            tags.setAttribute("id",children[i]["_id"]+"tags");
+            pids.innerText = "产品ID: " + children[i]["pids"].join();
+            pids.setAttribute("id",children[i]["_id"]+"pids");
+            if(children[i]["pubs"]){
+              for(var j=0;j<children[i]["pubs"].length;j++){
+                var pubCon = document.createElement("li");
+                pubCon.setAttribute("id",children[i]["pubs"][j]["aliId"]);
+                var pub = document.createElement("ul");
+                pubCon.appendChild(pub);
+                var aliId = document.createElement("li");
+                pub.appendChild(aliId);
+                var title = document.createElement("li");
+                pub.appendChild(title);
+                var timeUpdated = document.createElement("li");
+                pub.appendChild(timeUpdated);
+                var pn = document.createElement("li");
+                pub.appendChild(pn);
+                var position = document.createElement("li");
+                pub.appendChild(position);
+                var pnc = document.createElement("li");
+                pub.appendChild(pnc);
+                var positionc = document.createElement("li");
+                pub.appendChild(positionc);
+                var notIn = document.createElement("li");
+                pub.appendChild(notIn);
+                var type = document.createElement("li");
+                pub.appendChild(type);
+                aliId.innerText = "aliId" + children[i]["pubs"][j]["aliId"];
+                aliId.setAttribute("class","aliId");
+                title.innerText = "标题" + children[i]["pubs"][j]["title"];
+                title.setAttribute("class","title");
+                timeUpdated.innerText = "更新时间" +children[i]["pubs"][j]["timeUpdated"];
+                timeUpdated.setAttribute("class","timeUpdated");
+                pn.innerText = "页数" +children[i]["pubs"][j]["pn"];
+                pn.setAttribute("class","pn");
+                position.innerText = "位置" +children[i]["pubs"][j]["position"];
+                position.setAttribute("class","position");
+                pnc.innerText = "页数变化" +children[i]["pubs"][j]["pnc"];
+                pnc.setAttribute("class","pnc");
+                positionc.innerText = "位置变化" +children[i]["pubs"][j]["positionc"];
+                positionc.setAttribute("class","positionc");
+                notIn.innerText = "此页以后" +children[i]["pubs"][j]["notIn"];
+                notIn.setAttribute("class","notIn");
+                type.innerText = "排名类型" +children[i]["pubs"][j]["type"];
+                type.setAttribute("class","type");
+                pubs.appendChild(pubCon);
+              }
+            }
+            NewKw.appendChild(en);
+            NewKw.appendChild(zh);
+            NewKw.appendChild(isTarget);
+            NewKw.appendChild(site);
+            NewKw.appendChild(pids);
+            NewKw.appendChild(tags);
+            NewKw.appendChild(pubs);
+            this.parent.appendChild(NewKwCon);
+          }
+        }
+        this.updateChildren = function(children){
+          for(var i=0;i<children.length;i++){
+            var _id = children[i]["_id"];
+            if(_id){
+              for(prop in children[i]){
+                if(prop ==="tags"){
+                  let el = document.getElementById(_id+prop);
+                  el.innerText = children[i][prop].join();
+                }
+                else if(prop === "pids"){
+                  let el = document.getElementById(_id+prop);
+                  el.innerText = children[i][prop].join();
+                }
+                else if(prop === "pubs"){
+                  for(var j=0;j<children[i]["pubs"].length;j++){
+                    let aliId = children[i]["pubs"][j]["aliId"];
+                    let el = document.getElementById(aliId);
+                    if(el){
+                      for(p in children[i]["pubs"][j]){
+                        let elp = el.getElementsByClassName(p)[0];
+                        elp.innerText = children[i]["pubs"][j][p];
+                      }
+                    }
+                    else{
+                      let pubs = getElementById(children[i]["_id"]+"pubs");
+                      let pubCon = document.createElement("li");
+                      pubCon.setAttribute("id",children[i]["pubs"][j]["aliId"]);
+                      let pub = document.createElement("ul");
+                      pubCon.appendChild(pub);
+                      for(p in children[i]["pubs"][j]){
+                        let elp = document.createElement("li");
+                        elp.setAttribute("class",p);
+                        elp.innerText = p + children[i]["pubs"][j][p];
+                        pub.appendChild(elp);
+                      }
+                      pubs.appendChild(pubCon);
+                    }
+                  }
+                }
+                else{
+                  let el = document.getElementById(_id+prop);
+                  el.innerText = children[i][prop];
+                }
+              }
+            }
+          }
+        }
+        this.removeChildren = function(children){
+          for(var i=0;i<children.length;i++){
+            let el = document.getElementById(children[i]);
+            el.remove();
+          }
+        }
+      }
+      var keywordsView = new keywordsViewClass(divKeywords);
       var getKeyword = function(){
         var kw = {};
         kw.en = inputKw.value.trim();
@@ -76,17 +232,27 @@
       }
       ipcRenderer.on('saved', function(event,docs){
         console.log("saved",event,docs);
+        keywordsView.appendChildren(docs);
         // for(var i=0;i<docs.length;i++){
         //   for(prop in docs[i]){
         //     console.log(i+": "+ prop + ":"+docs[i][prop]);
         //   }
         // }
       });
+      ipcRenderer.on('initKeyword', function(event,docs){
+        console.log("initKeyword",event,docs);
+        keywordsView.appendChildren(docs);
+      });
+      ipcRenderer.on('updateRank', function(event,docs){
+        console.log("updateRank",event,docs);
+        keywordsView.updateChildren(docs);
+      });
       btnCreate.addEventListener("click",function(){
         var keyword = getKeyword();
         console.log(keyword);
         ipcRenderer.sendToHost("saveKeyword",keyword);
       });
+      ipcRenderer.sendToHost("initKeyword");
     </script>
   </body>
 </html>

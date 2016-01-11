@@ -425,7 +425,9 @@ Base.prototype = {
     var cb = cb || function(){};
     console.log("enter save");
     this.collection.insertOne(this.props,function(err,r){
-      cb(err,r.ops);
+      if(r){
+        cb(err,r.ops);
+      }
       this.events.emit("save",r.ops);
     }.bind(this))
   },

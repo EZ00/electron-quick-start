@@ -23,6 +23,7 @@
 </body>
 <script>
 var path = require("path");
+var request = require('request');
 const remote = require('electron').remote;
 const p_globals = require("p_globals");
 const env = require(path.join(p_globals._dirname,"../../env.js"));
@@ -96,11 +97,48 @@ var webPagesClass = function(){
                 else{
                   insertedDoc[prop] = docs[i][prop];
                 }
-                console.log(i+": "+ prop + ":"+docs[i][prop]);
+                // console.log(i+": "+ prop + ":"+docs[i][prop]);
               }
               insertedDocs.push(insertedDoc);
             }
             event.srcElement.send("saved",insertedDocs);
+          }
+        })
+      }
+      else if(channel === "initKeyword"){
+        console.log("channel === initKeyword");
+        Keywords.collection.find().toArray(function(err, docs){
+          if(err){
+            console.error(err);
+          }
+          else if(docs){
+            var insertedDocs = [];
+            for(var i=0;i<docs.length;i++){
+              var insertedDoc = {};
+              for(prop in docs[i]){
+                if(prop === "_id"){
+                  insertedDoc[prop] = docs[i][prop].toString();
+                }
+                else{
+                  insertedDoc[prop] = docs[i][prop];
+                }
+                // console.log(i+": "+ prop + ":"+docs[i][prop]);
+              }
+              insertedDocs.push(insertedDoc);
+            }
+            event.srcElement.send("initKeyword",insertedDocs);
+          }
+        })
+      }
+      else if(channel === "updateRank"){
+        console.log("channel === updateRank");
+        console.log(doc);
+        var r = request.defaults({'proxy':'http://127.0.0.1:3213'})
+        r("http://www.alibaba.com",function(error, response, body){
+          console.log(error);
+          console.log(response);
+          if (!error && response.statusCode == 200) {
+            console.log(body);
           }
         })
       }
@@ -238,7 +276,6 @@ btnDevTools.addEventListener("click",function(){
   }
 });
 btnGetIp.addEventListener("click",function(){
-  var request = require('request');
   request('http://www.ip-api.com/json/?fields=countryCode,query,status', function (error, response, body) {
     if (!error && response.statusCode == 200) {
       // console.log(body);

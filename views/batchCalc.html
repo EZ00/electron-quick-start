@@ -9,14 +9,14 @@
     <div>
       <span>截面形状：</span>
       <select id="selectShape">
-        <option value="square" selected="selected">方形</option>
+        <option value="rectangle" selected="selected">矩形</option>
+        <!-- <option value="square" selected="selected">方形</option> -->
         <option value="round">圆形</option>
-        <option value="rectangle">矩形</option>
       </select>
     </div>
     <div>
       <span>吨位：</span>
-      <input id="inputTons"></input>
+      <input id="inputTons" value="1"></input>
     </div>
     <div id="divContainer">
       <div class="pageShape" id="pageSquare">
@@ -24,7 +24,7 @@
         <div>单支重量（千克） =(外径*4/3.14-壁厚)*壁厚*0.02466*长度</div>
         <div>单支体积（立方米） = (外径/1000)<sup>2</sup>*长度</div>
         <div>每吨支数 = 1000千克/单支重量</div>
-        <div>格式：外径X外径-壁厚-长度</div>
+        <div>格式：外径X外径-壁厚-长度-吨位</div>
         <div>例：19*19-0.85-5.8</div>
       </div>
       <div class="pageShape" id="pageRound" style="display:none;">
@@ -32,7 +32,7 @@
         <div>单支重量（千克） =(外径-壁厚)*壁厚*0.02466*长度</div>
         <div>单支体积（立方米） = 3.14*(外径/2/1000)<sup>2</sup>*长度</div>
         <div>每吨支数 = 1000千克/单支重量</div>
-        <div>格式：外径-壁厚-长度</div>
+        <div>格式：外径-壁厚-长度-吨位</div>
         <div>例：19-0.85-5.8</div>
       </div>
       <div class="pageShape" id="pageRectangle" style="display:none;">
@@ -40,7 +40,7 @@
         <div>单支重量（千克） =((长+宽)*2/3.14-壁厚)*壁厚*0.02466*长度</div>
         <div>单支体积（立方米） = (长*宽/1000000)*长度</div>
         <div>每吨支数 = 1000千克/单支重量</div>
-        <div>格式：长X宽-壁厚-长度</div>
+        <div>格式：长X宽-壁厚-长度-吨位</div>
         <div>例：19*25-0.85-5.8</div>
       </div>
       <div>
@@ -115,31 +115,57 @@
       var btnCalc = document.getElementById("btnCalc");
       var divResults = document.getElementById("divResults");
       var pageShapes = document.getElementsByClassName("pageShape");
-      var selectedShape = "square";
+      var selectedShape = "rectangle";
       var batchCalcSquare = function(){
         console.log("batchCalcSquare");
         // 19X19-0.85-10
         // 38X38-0.9-30
         var lines = inputBatch.value.split("\n");
-        var tons = Number(inputTons.value);
-        if(!tons){alert("请输入吨位！");return false;}
+        var defaultTons = Number(inputTons.value);
+        if(!defaultTons){
+          defaultTons = 1;
+        }
         var results = [];
         for(var i=0;i<lines.length;i++){
           var splited = lines[i].split("-");
-          if(splited.length !== 3){alert("格式错误！");return false;}
-          var od = Number(splited[0].split("*")[0]);
-          if(!od){alert("格式错误！");return false;}
-          var wt = Number(splited[1]);
-          if(!wt){alert("格式错误！");return false;}
-          var length = Number(splited[2]);
-          if(!length){alert("格式错误！");return false;}
-          var result = {};
-          result["weight"] = (od*4/3.14-wt)*wt*0.02466*length;
-          result["volume"] = (od/1000)*(od/1000)*length;
-          result["pcsPerTon"] = 1000 / result["weight"];
-          result["totalPcs"] = tons * result["pcsPerTon"];
-          result["totalVolume"] = result["totalPcs"] * result["volume"];
-          results.push(result);
+          if(splited.length === 3){
+            var tons = defaultTons;
+            var od = Number(splited[0].split("*")[0]);
+            if(!od){alert("格式错误！");return false;}
+            var wt = Number(splited[1]);
+            if(!wt){alert("格式错误！");return false;}
+            var length = Number(splited[2]);
+            if(!length){alert("格式错误！");return false;}
+            var result = {};
+            result["weight"] = (od*4/3.14-wt)*wt*0.02466*length;
+            result["volume"] = (od/1000)*(od/1000)*length;
+            result["pcsPerTon"] = 1000 / result["weight"];
+            result["totalPcs"] = tons * result["pcsPerTon"];
+            result["totalVolume"] = result["totalPcs"] * result["volume"];
+            result["tons"] = tons;
+            results.push(result);
+          }
+          else if(splited.length === 4){
+            var tons = Number(splited[3]);
+            var od = Number(splited[0].split("*")[0]);
+            if(!od){alert("格式错误！");return false;}
+            var wt = Number(splited[1]);
+            if(!wt){alert("格式错误！");return false;}
+            var length = Number(splited[2]);
+            if(!length){alert("格式错误！");return false;}
+            var result = {};
+            result["weight"] = (od*4/3.14-wt)*wt*0.02466*length;
+            result["volume"] = (od/1000)*(od/1000)*length;
+            result["pcsPerTon"] = 1000 / result["weight"];
+            result["totalPcs"] = tons * result["pcsPerTon"];
+            result["totalVolume"] = result["totalPcs"] * result["volume"];
+            result["tons"] = tons;
+            results.push(result);
+          }
+          else{
+            alert("line:"+i+",splited.length === "+splited.length);
+            return false;
+          }
         }
         // var tableResults = document.createElement("table");
         // var tbody = document.createElement("tbody");
@@ -147,34 +173,63 @@
         divResults.innerHTML = "";
         for(var i=0;i<results.length;i++){
           var newDiv = document.createElement("div");
-          newDiv.innerText = "规格：" + lines[i] + "，" + "单支重量：" + Math.round10(results[i].weight, -3) + "，" + "每吨支数：" + Math.round10(results[i].pcsPerTon,-1) + "，" + "单支体积：" + Math.round10(results[i].volume,-9) + "，" + "总支数：" + Math.round10(results[i].totalPcs,-1) + "，" + "总体积：" + Math.round10(results[i].totalVolume,-1);
+          newDiv.innerText = "规格：" + lines[i] + "，" + "单支重量：" + Math.round10(results[i].weight, -3) + "，" + "每吨支数：" + Math.round10(results[i].pcsPerTon,-1) + "，" + "单支体积：" + Math.round10(results[i].volume,-9) + "，" + "总支数：" + Math.round10(results[i].totalPcs,-1) + "，" + "总体积：" + Math.round10(results[i].totalVolume,-1)+"，" + "吨位："+results[i].tons;
           divResults.appendChild(newDiv);
         }
       };
       var batchCalcRectangle = function(){
         var lines = inputBatch.value.split("\n");
-        var tons = Number(inputTons.value);
-        if(!tons){alert("请输入吨位！");return false;}
+        var defaultTons = Number(inputTons.value);
+        if(!defaultTons){
+          defaultTons = 1;
+        }
         var results = [];
         for(var i=0;i<lines.length;i++){
           var splited = lines[i].split("-");
-          if(splited.length !== 3){alert("格式错误！");return false;}
-          var sides = splited[0].split("*");
-          var sideA = Number(sides[0]);
-          var sideB = Number(sides[1]);
-          if(!sideA){alert("格式错误！");return false;}
-          if(!sideB){alert("格式错误！");return false;}
-          var wt = Number(splited[1]);
-          if(!wt){alert("格式错误！");return false;}
-          var length = Number(splited[2]);
-          if(!length){alert("格式错误！");return false;}
-          var result = {};
-          result["weight"] = ((sideA+sideB)*2/3.14-wt)*wt*0.02466*length;
-          result["volume"] = sideA*sideB/1000000*length;
-          result["pcsPerTon"] = 1000 / result["weight"];
-          result["totalPcs"] = tons * result["pcsPerTon"];
-          result["totalVolume"] = result["totalPcs"] * result["volume"];
-          results.push(result);
+          if(splited.length === 3){
+            var tons = defaultTons;
+            var sides = splited[0].split("*");
+            var sideA = Number(sides[0]);
+            var sideB = Number(sides[1]);
+            if(!sideA){alert("格式错误！");return false;}
+            if(!sideB){alert("格式错误！");return false;}
+            var wt = Number(splited[1]);
+            if(!wt){alert("格式错误！");return false;}
+            var length = Number(splited[2]);
+            if(!length){alert("格式错误！");return false;}
+            var result = {};
+            result["weight"] = ((sideA+sideB)*2/3.14-wt)*wt*0.02466*length;
+            result["volume"] = sideA*sideB/1000000*length;
+            result["pcsPerTon"] = 1000 / result["weight"];
+            result["totalPcs"] = tons * result["pcsPerTon"];
+            result["totalVolume"] = result["totalPcs"] * result["volume"];
+            result["tons"] = tons;
+            results.push(result);
+          }
+          else if(splited.length === 4){
+            var tons = Number(splited[3]);
+            var sides = splited[0].split("*");
+            var sideA = Number(sides[0]);
+            var sideB = Number(sides[1]);
+            if(!sideA){alert("格式错误！");return false;}
+            if(!sideB){alert("格式错误！");return false;}
+            var wt = Number(splited[1]);
+            if(!wt){alert("格式错误！");return false;}
+            var length = Number(splited[2]);
+            if(!length){alert("格式错误！");return false;}
+            var result = {};
+            result["weight"] = ((sideA+sideB)*2/3.14-wt)*wt*0.02466*length;
+            result["volume"] = sideA*sideB/1000000*length;
+            result["pcsPerTon"] = 1000 / result["weight"];
+            result["totalPcs"] = tons * result["pcsPerTon"];
+            result["totalVolume"] = result["totalPcs"] * result["volume"];
+            result["tons"] = tons;
+            results.push(result);
+          }
+          else{
+            alert("line:"+i+",splited.length === "+splited.length);
+            return false;
+          }
         }
         // var tableResults = document.createElement("table");
         // var tbody = document.createElement("tbody");
@@ -182,37 +237,63 @@
         divResults.innerHTML = "";
         for(var i=0;i<results.length;i++){
           var newDiv = document.createElement("div");
-          newDiv.innerText = "规格：" + lines[i] + "，" + "单支重量：" + Math.round10(results[i].weight, -3) + "，" + "每吨支数：" + Math.round10(results[i].pcsPerTon,-1) + "，" + "单支体积：" + Math.round10(results[i].volume,-9) + "，" + "总支数：" + Math.round10(results[i].totalPcs,-1) + "，" + "总体积：" + Math.round10(results[i].totalVolume,-1);
+          newDiv.innerText = "规格：" + lines[i] + "，" + "单支重量：" + Math.round10(results[i].weight, -3) + "，" + "每吨支数：" + Math.round10(results[i].pcsPerTon,-1) + "，" + "单支体积：" + Math.round10(results[i].volume,-9) + "，" + "总支数：" + Math.round10(results[i].totalPcs,-1) + "，" + "总体积：" + Math.round10(results[i].totalVolume,-1)+"，" + "吨位："+results[i].tons;
           divResults.appendChild(newDiv);
         }
       }
       var batchCalcRound = function(){
         var lines = inputBatch.value.split("\n");
-        var tons = Number(inputTons.value);
-        if(!tons){alert("请输入吨位！");return false;}
+        var defaultTons = Number(inputTons.value);
+        if(!defaultTons){
+          defaultTons = 1;
+        }
         var results = [];
         for(var i=0;i<lines.length;i++){
           var splited = lines[i].split("-");
-          if(splited.length !== 3){alert("格式错误！");return false;}
-          var od = Number(splited[0]);
-          if(!od){alert("格式错误！");return false;}
-          var wt = Number(splited[1]);
-          if(!wt){alert("格式错误！");return false;}
-          var length = Number(splited[2]);
-          if(!length){alert("格式错误！");return false;}
-          var result = {};
-          result["weight"] = (od-wt)*wt*0.02466*length;
-          result["volume"] = 3.14*(od/2/1000)*(od/2/1000)*length;
-          result["pcsPerTon"] = 1000 / result["weight"];
-          result["totalPcs"] = tons * result["pcsPerTon"];
-          result["totalVolume"] = result["totalPcs"] * result["volume"];
-          results.push(result);
+          if(splited.length === 3){
+            var tons = defaultTons;
+            var od = Number(splited[0]);
+            if(!od){alert("格式错误！");return false;}
+            var wt = Number(splited[1]);
+            if(!wt){alert("格式错误！");return false;}
+            var length = Number(splited[2]);
+            if(!length){alert("格式错误！");return false;}
+            var result = {};
+            result["weight"] = (od-wt)*wt*0.02466*length;
+            result["volume"] = 3.14*(od/2/1000)*(od/2/1000)*length;
+            result["pcsPerTon"] = 1000 / result["weight"];
+            result["totalPcs"] = tons * result["pcsPerTon"];
+            result["totalVolume"] = result["totalPcs"] * result["volume"];
+            result["tons"] = tons;
+            results.push(result);
+          }
+          else if(splited.length === 4){
+            var tons = Number(splited[3]);
+            var od = Number(splited[0]);
+            if(!od){alert("格式错误！");return false;}
+            var wt = Number(splited[1]);
+            if(!wt){alert("格式错误！");return false;}
+            var length = Number(splited[2]);
+            if(!length){alert("格式错误！");return false;}
+            var result = {};
+            result["weight"] = (od-wt)*wt*0.02466*length;
+            result["volume"] = 3.14*(od/2/1000)*(od/2/1000)*length;
+            result["pcsPerTon"] = 1000 / result["weight"];
+            result["totalPcs"] = tons * result["pcsPerTon"];
+            result["totalVolume"] = result["totalPcs"] * result["volume"];
+            result["tons"] = tons;
+            results.push(result);
+          }
+          else{
+            alert("line:"+i+",splited.length === "+splited.length);
+            return false;
+          }
         }
         divCount.innerText = "规格数量："+lines.length;
         divResults.innerHTML = "";
         for(var i=0;i<results.length;i++){
           var newDiv = document.createElement("div");
-          newDiv.innerText = "规格：" + lines[i] + "，" + "单支重量：" + Math.round10(results[i].weight, -3) + "，" + "每吨支数：" + Math.round10(results[i].pcsPerTon,-1) + "，" + "单支体积：" + Math.round10(results[i].volume,-9) + "，" + "总支数：" + Math.round10(results[i].totalPcs,-1) + "，" + "总体积：" + Math.round10(results[i].totalVolume,-1);
+          newDiv.innerText = "规格：" + lines[i] + "，" + "单支重量：" + Math.round10(results[i].weight, -3) + "，" + "每吨支数：" + Math.round10(results[i].pcsPerTon,-1) + "，" + "单支体积：" + Math.round10(results[i].volume,-9) + "，" + "总支数：" + Math.round10(results[i].totalPcs,-1) + "，" + "总体积：" + Math.round10(results[i].totalVolume,-1)+"，" + "吨位："+results[i].tons;
           divResults.appendChild(newDiv);
         }
         // console.log("batchCalcRound")

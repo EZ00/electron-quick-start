@@ -170,13 +170,13 @@ var webPagesClass = function(){
                         let error = null;
                         let data = {};
                         let titleChildren = productItems[i].querySelector(".title").children;
-                        for(var i=0;i<titleChildren.length;i++){ui2-icon-crown
+                        for(var i=0;i<titleChildren.length;i++){
                           if(titleChildren[i].href && titleChildren[i].href.indexOf("product-detail")>-1){
                             data.title = titleChildren[i].textContent;
                             data.pid = titleChildren[i].getAttribute("data-pid");
                           }
-                          else if{
-
+                          else if(titleChildren[i].hasClass("ui2-icon-crown")){
+                            data.type = "top";
                           }
                         }
                         let aTitle = productItems[i].querySelector(".title").firstElementChild;

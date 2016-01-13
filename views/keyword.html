@@ -34,6 +34,12 @@
         <button id="btnCreate">创建</button>
       </div>
     </div>
+    <div>
+      <span>开始页码：</span>
+      <input id="inputStartPn" value="1"></input>
+      <span>结束页码：</span>
+      <input id="inputEndPn" value="20"></input>
+    </div>
     <ol id="divKeywords"></ol>
     <script>
     "use strict"
@@ -45,6 +51,8 @@
       var inputSite = document.getElementById("inputSite");
       var btnCreate = document.getElementById("btnCreate");
       var divKeywords = document.getElementById("divKeywords");
+      var inputStartPn = document.getElementById("inputStartPn");
+      var inputEndPn = document.getElementById("inputEndPn");
       var keywordsViewClass = function(parent){
         this.parent = parent;
         this.appendChildren = function(children){
@@ -64,6 +72,8 @@
               doc._id = e.target.dataset["id"];
               doc.kw = e.target.dataset["kw"];
               doc.site = e.target.dataset["site"];
+              doc.startPn = Number(inputStartPn.value);
+              doc.endPn = Number(inputEndPn.value);
               // console.log(doc);
               ipcRenderer.sendToHost("updateRank",doc);
             })
@@ -246,6 +256,9 @@
       ipcRenderer.on('updateRank', function(event,docs){
         console.log("updateRank",event,docs);
         keywordsView.updateChildren(docs);
+      });
+      ipcRenderer.on("getRankProgress",function(event,doc){
+        console.log("getRankProgress",doc);
       });
       btnCreate.addEventListener("click",function(){
         var keyword = getKeyword();

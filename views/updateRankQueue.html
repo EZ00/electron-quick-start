@@ -2,45 +2,13 @@
 <html>
   <head>
     <meta charset="UTF-8">
-    <title>keywords</title>
+    <title>关键词查询进度</title>
   </head>
   <body>
-    <h1>关键词管理</h1>
+    <h1>关键词查询进度</h1>
     <div>
-      <div>
-        <span>关键词：</span>
-        <input id="inputKw"></input>
-      </div>
-      <div>
-        <span>中文：</span>
-        <input id="inputZh"></input>
-      </div>
-      <div>
-        <input type="checkbox" id="inputIsTarget" checked="checked">是否目标关键词</input>
-      </div>
-      <div>
-        <span>标签(逗号分隔)</span>
-        <input id="inputTags"></input>
-      </div>
-      <div>
-        <span>产品ID(逗号分隔)</span>
-        <input id="inputProductIds"></input>
-      </div>
-      <div>
-        <span>网址</span>
-        <input id="inputSite"></input>
-      </div>
-      <div>
-        <button id="btnCreate">创建</button>
-      </div>
     </div>
-    <div>
-      <span>开始页码：</span>
-      <input id="inputStartPn" value="1"></input>
-      <span>结束页码：</span>
-      <input id="inputEndPn" value="20"></input>
-    </div>
-    <ol id="divKeywords"></ol>
+    <ol id="elProgress"></ol>
     <script>
     "use strict"
       var inputKw = document.getElementById("inputKw");
@@ -53,7 +21,7 @@
       var divKeywords = document.getElementById("divKeywords");
       var inputStartPn = document.getElementById("inputStartPn");
       var inputEndPn = document.getElementById("inputEndPn");
-      var keywordsViewClass = function(parent){
+      var progressViewClass = function(parent){
         this.parent = parent;
         this.appendChildren = function(children){
           for(var i=0;i<children.length;i++){
@@ -153,13 +121,12 @@
             NewKw.appendChild(pubs);
             this.parent.appendChild(NewKwCon);
           }
-          ipcRenderer.sendToHost("initPubs");
         }
         this.updateChildren = function(children){
           for(var i=0;i<children.length;i++){
             var _id = children[i]["_id"];
             if(_id){
-              for(var prop in children[i]){
+              for(prop in children[i]){
                 if(prop ==="tags"){
                   let el = document.getElementById(_id+prop);
                   el.innerText = children[i][prop].join();
@@ -173,7 +140,7 @@
                     let aliId = children[i]["pubs"][j]["aliId"];
                     let el = document.getElementById(aliId);
                     if(el){
-                      for(var p in children[i]["pubs"][j]){
+                      for(p in children[i]["pubs"][j]){
                         let elp = el.getElementsByClassName(p)[0];
                         elp.innerText = children[i]["pubs"][j][p];
                       }
@@ -184,7 +151,7 @@
                       pubCon.setAttribute("id",children[i]["pubs"][j]["aliId"]);
                       let pub = document.createElement("ul");
                       pubCon.appendChild(pub);
-                      for(var p in children[i]["pubs"][j]){
+                      for(p in children[i]["pubs"][j]){
                         let elp = document.createElement("li");
                         elp.setAttribute("class",p);
                         elp.innerText = p + children[i]["pubs"][j][p];
@@ -208,34 +175,8 @@
             el.remove();
           }
         }
-        this.updatePubs = function(pubs){
-          for(var i=0;i<pubs.length;i++){
-            var el = document.getElementById(pubs[i]["aliId"]);
-            if(el){
-              for(var p in pubs[i]){
-                var elp = el.getElementsByClassName(p)[0];
-                elp.innerText = pubs[i][p];
-              }
-            }
-            else{
-              var pubs = document.getElementById(pubs[i]["_id"]+"pubs");
-              var pubCon = document.createElement("li");
-              console.log(pubs[i]);
-              pubCon.setAttribute("id",pubs[i]["aliId"]);
-              var pub = document.createElement("ul");
-              pubCon.appendChild(pub);
-              for(var p in pubs[i]){
-                var elp = document.createElement("li");
-                elp.setAttribute("class",p);
-                elp.innerText = p + pubs[i][p];
-                pub.appendChild(elp);
-              }
-              pubs.appendChild(pubCon);
-            }
-          }
-        }
       }
-      var keywordsView = new keywordsViewClass(divKeywords);
+      var progressView = new progressViewClass(elProgress);
       var getKeyword = function(){
         var kw = {};
         kw.en = inputKw.value.trim();
@@ -269,34 +210,31 @@
       }
       ipcRenderer.on('saved', function(event,docs){
         console.log("saved",event,docs);
-        keywordsView.appendChildren(docs);
+        progressView.appendChildren(docs);
         // for(var i=0;i<docs.length;i++){
         //   for(prop in docs[i]){
         //     console.log(i+": "+ prop + ":"+docs[i][prop]);
         //   }
         // }
       });
-      ipcRenderer.on('initKeyword', function(event,docs){
-        console.log("initKeyword",event,docs);
-        keywordsView.appendChildren(docs);
+      ipcRenderer.on('initRankProgress', function(event,docs){
+        console.log("initRankProgress",event,docs);
+        // progressView.appendChildren(docs);
       });
-      ipcRenderer.on('initPubs', function(event,docs){
-        console.log("initPubs",event,docs);
-        keywordsView.updatePubs(docs);
-      });
-      ipcRenderer.on('updateRank', function(event,docs){
-        console.log("updateRank",event,docs);
-        keywordsView.updateChildren(docs);
+      ipcRenderer.on('updateRankQueue', function(event,docs){
+        console.log("updateRankQueue",event,docs);
+        // progressView.updateChildren(docs);
       });
       ipcRenderer.on("getRankProgress",function(event,doc){
         console.log("getRankProgress",doc);
       });
-      btnCreate.addEventListener("click",function(){
-        var keyword = getKeyword();
-        console.log(keyword);
-        ipcRenderer.sendToHost("saveKeyword",keyword);
-      });
-      ipcRenderer.sendToHost("initKeyword");
+      // btnCreate.addEventListener("click",function(){
+      //   var keyword = getKeyword();
+      //   console.log(keyword);
+      //   ipcRenderer.sendToHost("saveKeyword",keyword);
+      // });
+      console.log("initRankProgress");
+      ipcRenderer.sendToHost("initRankProgress");
     </script>
   </body>
 </html>

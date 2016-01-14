@@ -12,6 +12,7 @@
 </div>
 <div>
   <button id="btnKeywordMan">关键词管理</button>
+  <button id="btnUpdateRankQueue">关键词查询进度</button>
   <button id="btnGetZeroEffectProducts">getZeroEffectProducts</button>
   <button id="btnSend">send</button>
   <button id="btnDevTools">DevTools</button>
@@ -30,9 +31,11 @@ var jsdom = require("jsdom");
 const remote = require('electron').remote;
 const p_globals = require("p_globals");
 const env = require(path.join(p_globals._dirname,"../../env.js"));
-const db = remote.require(path.join(p_globals._dirname,"../../db.js"));
-const Keywords = remote.require(path.join(p_globals._dirname,"../../models/keywords.js"));
-const Aliranks = db.collection("aliranks");
+const db = require(path.join(p_globals._dirname,"../../db.js"));
+var Keywords;
+var Aliranks;
+var updateRankQueue = {};
+var dashboards = {};
 const ipcRenderer = require('electron').ipcRenderer;
 
 function hasClass(element, cls) {
@@ -48,6 +51,20 @@ var preloadMap = {};
 // webPages.push(document.getElementById("webPage1"));
 // var tabs = [];
 // tabs.push(document.getElementById("tab1"));
+
+var inputUrl = document.getElementById("inputUrl");
+var webPage1 = document.getElementById("webPage1");
+var btnGo = document.getElementById("btnGo");
+var btnNew = document.getElementById("btnNew");
+var btnKeywordMan = document.getElementById("btnKeywordMan");
+var btnUpdateRankQueue = document.getElementById("btnUpdateRankQueue");
+// var btnCalc = document.getElementById("btnCalc");
+// var btnBatchCalc = document.getElementById("btnBatchCalc");
+var btnGetZeroEffectProducts = document.getElementById("btnGetZeroEffectProducts");
+var btnSend = document.getElementById("btnSend");
+var btnDevTools = document.getElementById("btnDevTools");
+var btnGetIp = document.getElementById("btnGetIp");
+
 var divWebPages = document.getElementById("divWebPages");
 var divTabs = document.getElementById("divTabs");
 var currentPage = null;
@@ -74,6 +91,271 @@ var parseUrl = function(url){
   }
   return url;
 }
+var setEventListener = function(newPage,url){
+  var urlParts = url.split(":");
+  // console.log(urlParts);
+  if(urlParts[0] === "dashboard"){
+    if(urlParts[1] === "keyword"){
+      newPage.addEventListener('ipc-message', function(event) {
+        var channel = event.channel;
+        var doc = event.args[0];
+        if(channel === "saveKeyword"){
+          console.log("channel === saveKeyword");
+          Keywords.props = doc;
+          Keywords.save(function(err,docs){
+            if(err){
+              console.error(err);
+            }
+            else{
+              // console.log("saved",docs);
+              var insertedDocs = [];
+              for(var i=0;i<docs.length;i++){
+                var insertedDoc = {};
+                for(prop in docs[i]){
+                  if(prop === "_id"){
+                    insertedDoc[prop] = docs[i][prop].toString();
+                  }
+                  else{
+                    insertedDoc[prop] = docs[i][prop];
+                  }
+                  // console.log(i+": "+ prop + ":"+docs[i][prop]);
+                }
+                insertedDocs.push(insertedDoc);
+              }
+              event.srcElement.send("saved",insertedDocs);
+            }
+          })
+        }
+        else if(channel === "initKeyword"){
+          console.log("channel === initKeyword");
+          Keywords.collection.find().toArray(function(err, docs){
+            if(err){
+              console.error(err);
+            }
+            else if(docs){
+              var insertedDocs = [];
+              for(var i=0;i<docs.length;i++){
+                var insertedDoc = {};
+                for(var prop in docs[i]){
+                  if(prop === "_id"){
+                    insertedDoc[prop] = docs[i][prop].toString();
+                  }
+                  else{
+                    insertedDoc[prop] = docs[i][prop];
+                  }
+                  // console.log(i+": "+ prop + ":"+docs[i][prop]);
+                }
+                insertedDocs.push(insertedDoc);
+              }
+              event.srcElement.send("initKeyword",insertedDocs);
+            }
+          })
+        }
+        else if(channel === "initPubs"){
+          Aliranks.collection.find().toArray(function(err,docs){
+            if(err){
+              console.error(err);
+            }
+            else if(docs){
+              var insertedDocs = [];
+              for(var i=0;i<docs.length;i++){
+                var insertedDoc = {};
+                for(var prop in docs[i]){
+                  if(prop === "_id"){
+                  }
+                  else if(prop === "kwId"){
+                    insertedDoc["_id"] = docs[i][prop];
+                  }
+                  else{
+                    insertedDoc[prop] = docs[i][prop];
+                  }
+                  // console.log(i+": "+ prop + ":"+docs[i][prop]);
+                }
+                insertedDocs.push(insertedDoc);
+              }
+              event.srcElement.send("initPubs",insertedDocs);
+            }
+          })
+        }
+        else if(channel === "updateRank"){
+          console.log("channel === updateRank");
+          console.log(doc);
+          updateRankQueue[doc.kw] = {};
+          updateRankQueue[doc.kw]["current"] = doc.startPn;
+          updateRankQueue[doc.kw]["end"] = doc.endPn;
+          updateRankQueue[doc.kw]["state"] = "run";
+          updateRankQueue[doc.kw]["kw"] = doc.kw;
+          if(dashboards["updateRankQueue"]){
+            dashboards["updateRankQueue"].send("updateRankQueue",updateRankQueue[doc.kw]);
+          }
+          var kw = doc.kw.replace(/ /g,'%2B');
+          var options = {
+            url: 'http://www.alibaba.com/products/steel%2Btube/7.html',
+            headers: {
+              'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+              'Accept-Encoding':'gzip, deflate, sdch',
+              'Accept-Language':'en-US,en;q=0.7',
+              'Host':'www.alibaba.com',
+              'Proxy-Connection':'keep-alive',
+              'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36',
+            },
+            encoding: null
+          };
+          options.url = 'http://www.alibaba.com/products/'+kw+"/"+updateRankQueue[doc.kw]["current"]+".html";
+          // var r = request.defaults({'proxy':'http://127.0.0.1:3213'})
+          var cbGetRank = function(error, response, body){
+            // console.log(error);
+            // console.log(response);
+            if (!error && response.statusCode == 200) {
+              if (response.headers['content-encoding'] === 'gzip')
+                zlib.gunzip(body, function(err, result) {
+                    if(err) return console.error(err);
+                    var rawHTML = result.toString();
+                    jsdom.env(
+                      rawHTML,
+                      function (err, window) {
+                        var productItems = window.document.getElementById("J-m-product-items").children;
+                        for(var i=0;i<productItems.length;i++){
+                          let errors = [];
+                          let data = {};
+                          data.kwId = doc._id;
+                          data.type = "nature";
+                          if(updateRankQueue[doc.kw]["current"] === 1){
+                            var sl = productItems[i].querySelector(".sl");
+                            if(hasClass(productItems[i].querySelector(".title").firstElementChild,"ui2-icon-crown")){
+                              data.type = "top";
+                            }
+                            else if(hasClass(productItems[i],"AD")){
+                              data.type = "AD";
+                            }
+                            else if(hasClass(productItems[i],"p4p")){
+                              data.type = "p4p";
+                            }
+                            else if(sl && sl.textContent === "Sponsored Listing"){
+                              data.type = "p4p";
+                            }
+                          }
+                          let titleChildren = productItems[i].querySelector(".title").children;
+                          for(var j=0;j<titleChildren.length;j++){
+                            if(titleChildren[j].href && titleChildren[j].href.indexOf("product-detail")>-1){
+                              data.title = titleChildren[j].textContent;
+                              data.aliId = titleChildren[j].getAttribute("data-pid");
+                            }
+                          }
+                          if(!data.title){
+                            errors.push("error:!data.title");
+                          }
+                          if(!data.aliId){
+                            errors.push("error:!data.aliId");
+                          }
+                          let aStitle = productItems[i].querySelector(".stitle").children[1];
+                          if(aStitle && aStitle.href && aStitle.href.indexOf("company_profile")>-1){
+                            if(aStitle.href.indexOf(doc.site)>-1){
+                              data.siteMatched = true;
+                            }
+                            else{
+                              data.siteMatched = false;
+                            }
+                          }
+                          else{
+                            data.siteMatched = null;
+                          }
+                          if(data.siteMatched === null){
+                            errors.push("data.siteMatched === null");
+                          }
+                          data.pn = updateRankQueue[doc.kw]["current"];
+                          data.pos = i+1;
+
+                          if(errors.length !== 0){
+                            console.error(errors);
+                          }
+                          else{
+                            if(data.siteMatched === true){
+                              console.log(data);
+                              Aliranks.collection.findOne({"aliId":data.aliId},function(err,rdoc){
+                                console.log("enter findOne");
+                                if(err){
+                                  console.error(err);
+                                }
+                                else if(rdoc){
+                                  // update
+                                  data.pnc = data.pn - rdoc.pn;
+                                  data.posc = data.pos - rdoc.pos;
+                                  data.timeUpdated = new Date();
+                                  data.notIn = null;
+                                  data.site = doc.site;
+                                  data.kw = doc.kw;
+                                  delete data.siteMatched;
+                                  Aliranks.collection.updateOne({"aliId":data.aliId},{"$set":data},null,function(e,result){
+                                    console.log("enter updateOne");
+                                    if(e){
+                                      console.error(e);
+                                    }
+                                    else{
+                                      console.log(result);
+                                    }
+                                  })
+                                }
+                                else{
+                                  //insert
+                                  data.pnc = 0;
+                                  data.posc = 0;
+                                  data.timeUpdated = new Date();
+                                  data.notIn = null;
+                                  data.site = doc.site;
+                                  data.kw = doc.kw;
+                                  delete data.siteMatched;
+                                  Aliranks.collection.insertOne(data,function(e,result){
+                                    console.log("enter insertOne");
+                                    if(e){
+                                      console.log(e);
+                                    }
+                                    else{
+                                      console.log(result);
+                                    }
+                                  })
+                                }
+                              })
+                            }
+                            // console.log(productItems[i]);
+                          }
+                        }
+                        updateRankQueue[doc.kw]["current"] += 1;
+                        if(updateRankQueue[doc.kw]["current"] <= updateRankQueue[doc.kw]["end"]){
+                          options.url = 'http://www.alibaba.com/products/'+kw+"/"+updateRankQueue[doc.kw]["current"]+".html";
+                          if(dashboards["updateRankQueue"]){
+                            dashboards["updateRankQueue"].send("updateRankQueue",updateRankQueue[doc.kw]);
+                          }
+                          request(options,cbGetRank);
+                        }
+                        else{
+                          if(dashboards["updateRankQueue"]){
+                            dashboards["updateRankQueue"].send("updateRankQueue",updateRankQueue[doc.kw]);
+                          }
+                        }
+                      }
+                    );
+                });
+            }
+          }
+          request(options,cbGetRank);
+        }
+      });
+    }
+    else if(urlParts[1] === "updateRankQueue"){
+      dashboards["updateRankQueue"] = newPage;
+      newPage.addEventListener('ipc-message', function(event) {
+        var channel = event.channel;
+        var doc = event.args[0];
+        if(channel === "initRankProgress"){
+          console.log("channel === initRankProgress");
+          event.srcElement.send("initRankProgress",updateRankQueue);
+        }
+      });
+    }
+    // console.log(url);
+  }
+}
 var webPagesClass = function(){
   // this.webPages = [];
   // this.webPages.push(document.getElementById("webPage1"));
@@ -82,210 +364,11 @@ var webPagesClass = function(){
   // this.divWebPages = document.getElementById("divWebPages");
   // this.divTabs = document.getElementById("divTabs");
   this.append = function(url){
-    url = parseUrl(url);
     var newPage = document.createElement("webview");
-    newPage.addEventListener('ipc-message', function(event) {
-      var channel = event.channel;
-      var doc = event.args[0];
-      if(channel === "saveKeyword"){
-        console.log("channel === saveKeyword");
-        Keywords.props = doc;
-        Keywords.save(function(err,docs){
-          if(err){
-            console.error(err);
-          }
-          else{
-            // console.log("saved",docs);
-            var insertedDocs = [];
-            for(var i=0;i<docs.length;i++){
-              var insertedDoc = {};
-              for(prop in docs[i]){
-                if(prop === "_id"){
-                  insertedDoc[prop] = docs[i][prop].toString();
-                }
-                else{
-                  insertedDoc[prop] = docs[i][prop];
-                }
-                // console.log(i+": "+ prop + ":"+docs[i][prop]);
-              }
-              insertedDocs.push(insertedDoc);
-            }
-            event.srcElement.send("saved",insertedDocs);
-          }
-        })
-      }
-      else if(channel === "initKeyword"){
-        console.log("channel === initKeyword");
-        Keywords.collection.find().toArray(function(err, docs){
-          if(err){
-            console.error(err);
-          }
-          else if(docs){
-            var insertedDocs = [];
-            for(var i=0;i<docs.length;i++){
-              var insertedDoc = {};
-              for(var prop in docs[i]){
-                if(prop === "_id"){
-                  insertedDoc[prop] = docs[i][prop].toString();
-                }
-                else{
-                  insertedDoc[prop] = docs[i][prop];
-                }
-                // console.log(i+": "+ prop + ":"+docs[i][prop]);
-              }
-              insertedDocs.push(insertedDoc);
-            }
-            event.srcElement.send("initKeyword",insertedDocs);
-          }
-        })
-      }
-      else if(channel === "updateRank"){
-        console.log("channel === updateRank");
-        console.log(doc);
-        var currentPage = doc.startPn;
-        var kw = doc.kw.replace(/ /g,'%2B');
-        var options = {
-          url: 'http://www.alibaba.com/products/steel%2Btube/7.html',
-          headers: {
-            'Accept':'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-            'Accept-Encoding':'gzip, deflate, sdch',
-            'Accept-Language':'en-US,en;q=0.7',
-            'Host':'www.alibaba.com',
-            'Proxy-Connection':'keep-alive',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36',
-          },
-          encoding: null
-        };
-        options.url = 'http://www.alibaba.com/products/'+kw+"/"+currentPage+".html";
-        // var r = request.defaults({'proxy':'http://127.0.0.1:3213'})
-        var cbGetRank = function(error, response, body){
-          // console.log(error);
-          // console.log(response);
-          doc.currentPage = currentPage;
-          event.srcElement.send("getRankProgress",doc);
-          if (!error && response.statusCode == 200) {
-            if (response.headers['content-encoding'] === 'gzip')
-              zlib.gunzip(body, function(err, result) {
-                  if(err) return console.error(err);
-                  var rawHTML = result.toString();
-                  jsdom.env(
-                    rawHTML,
-                    function (err, window) {
-                      var productItems = window.document.getElementById("J-m-product-items").children;
-                      for(var i=0;i<productItems.length;i++){
-                        let errors = [];
-                        let data = {};
-                        data.type = "nature";
-                        if(currentPage === 1){
-                          var sl = productItems[i].querySelector(".sl");
-                          if(hasClass(productItems[i].querySelector(".title").firstElementChild,"ui2-icon-crown")){
-                            data.type = "top";
-                          }
-                          else if(hasClass(productItems[i],"AD")){
-                            data.type = "AD";
-                          }
-                          else if(hasClass(productItems[i],"p4p")){
-                            data.type = "p4p";
-                          }
-                          else if(sl && sl.textContent === "Sponsored Listing"){
-                            data.type = "p4p";
-                          }
-                        }
-                        let titleChildren = productItems[i].querySelector(".title").children;
-                        for(var j=0;j<titleChildren.length;j++){
-                          if(titleChildren[j].href && titleChildren[j].href.indexOf("product-detail")>-1){
-                            data.title = titleChildren[j].textContent;
-                            data.aliId = titleChildren[j].getAttribute("data-pid");
-                          }
-                        }
-                        if(!data.title){
-                          errors.push("error:!data.title");
-                        }
-                        if(!data.aliId){
-                          errors.push("error:!data.aliId");
-                        }
-                        let aStitle = productItems[i].querySelector(".stitle").children[1];
-                        if(aStitle && aStitle.href && aStitle.href.indexOf("company_profile")>-1){
-                          if(aStitle.href.indexOf(doc.site)>-1){
-                            data.siteMatched = true;
-                          }
-                          else{
-                            data.siteMatched = false;
-                          }
-                        }
-                        else{
-                          data.siteMatched = null;
-                        }
-                        if(data.siteMatched === null){
-                          errors.push("data.siteMatched === null");
-                        }
-                        data.pn = currentPage;
-                        data.pos = i+1;
-
-                        if(errors.length !== 0){
-                          console.error(errors);
-                        }
-                        else{
-                          if(data.siteMatched === true){
-                            console.log(data);
-                            console.log("Aliranks",Aliranks.findOne);
-                            Aliranks.findOne({"aliId":data.aliId},function(err,rdoc){
-                              console.log("enter findOne");
-                              if(err){
-                                console.error(err);
-                              }
-                              else if(rdoc){
-                                // update
-                                data.pnc = data.pn - rdoc.pn;
-                                data.posc = data.pos - rdoc.pos;
-                                data.timeUpdated = new Date();
-                                data.notIn = null;
-                                Aliranks.updateOne({"aliId":data.aliId},{"$set":data},null,function(e,result){
-                                  console.log("enter updateOne");
-                                  if(e){
-                                    console.error(e);
-                                  }
-                                  else{
-                                    console.log(result);
-                                  }
-                                })
-                              }
-                              else{
-                                //insert
-                                data.pnc = 0;
-                                data.posc = 0;
-                                data.timeUpdated = new Date();
-                                data.notIn = null;
-                                Aliranks.insertOne(data,function(e,result){
-                                  console.log("enter insertOne");
-                                  if(e){
-                                    console.error(e);
-                                  }
-                                  else{
-                                    console.log(result);
-                                  }
-                                })
-                              }
-                            })
-                          }
-                          // console.log(productItems[i]);
-                        }
-                      }
-                      currentPage += 1;
-                      // console.log("currentPage="+currentPage+",EndPn="+doc.endPn);
-                      if(currentPage <= doc.endPn){
-                        options.url = 'http://www.alibaba.com/products/'+kw+"/"+currentPage+".html";
-                        request(options,cbGetRank);
-                      }
-                    }
-                  );
-              });
-          }
-        }
-        request(options,cbGetRank);
-      }
-    });
+    setEventListener(newPage,url);
+    inputUrl.value = url;
     newPage.setAttribute("id","webPage"+(divTabs.children.length+1));
+    url = parseUrl(url);
     newPage.setAttribute("src",url);
     newPage.setAttribute("style","display:inline-block; width:100%;");
     newPage.setAttribute("data-id",divTabs.children.length);
@@ -365,93 +448,89 @@ var webPagesClass = function(){
   this.append("about:blank");
 }
 var webPages = new webPagesClass;
-var inputUrl = document.getElementById("inputUrl");
-var webPage1 = document.getElementById("webPage1");
-var btnGo = document.getElementById("btnGo");
-var btnNew = document.getElementById("btnNew");
-var btnKeywordMan = document.getElementById("btnKeywordMan");
-// var btnCalc = document.getElementById("btnCalc");
-// var btnBatchCalc = document.getElementById("btnBatchCalc");
-var btnGetZeroEffectProducts = document.getElementById("btnGetZeroEffectProducts");
-var btnSend = document.getElementById("btnSend");
-var btnDevTools = document.getElementById("btnDevTools");
-var btnGetIp = document.getElementById("btnGetIp");
 
-btnKeywordMan.addEventListener("click",function(){
-  webPages.append("dashboard:keyword");
-});
-// btnCalc.addEventListener("click",function(){
-//   webPages.append("dashboard:calc");
-// });
-// btnBatchCalc.addEventListener("click",function(){
-//   webPages.append("dashboard:batchCalc");
-// });
-btnGo.addEventListener("click",function(){
-  if(currentPage !== null){
-    currentPage.src = parseUrl(inputUrl.value);
+
+
+db.connect(env.mongo_url, function(err) {
+  if (err) {
+    console.log('Unable to connect to Mongo.')
+    process.exit(1)
   }
-});
-btnNew.addEventListener("click",function(){
-  webPages.append(inputUrl.value);
-});
-btnGetZeroEffectProducts.addEventListener("click",function(){
-  if(currentPage !== null){
-    currentPage.executeJavaScript("__aliTools.getZeroEffectProducts({"+
-  'orderBy: "time",'+
-  'orderModel:	"desc",'+
-  'selected:	0,'+
-  'statisticsType:"day",'+
-  'pageSize : 10,'+
-  'pageNO : 1,'+
-  'time : 170'+
-"});");
-  }
-});
-btnSend.addEventListener("click",function(){
-  if(currentPage !== null){
-    currentPage.executeJavaScript("__aliTools.send()");
-  }
-});
-btnDevTools.addEventListener("click",function(){
-  if(currentPage !== null){
-    currentPage.openDevTools();
-  }
-});
-btnGetIp.addEventListener("click",function(){
-  request('http://www.ip-api.com/json/?fields=countryCode,query,status', function (error, response, body) {
-    if (!error && response.statusCode == 200) {
-      // console.log(body);
-      var geoipData = JSON.parse(body);
-      console.log(geoipData);
-      if(geoipData.status = "success"){
-        if(geoipData.countryCode === "CN"){
-          console.log("ip地址在中国");
-        }
-        else{
-          var pip = db.collection("pip");
-          pip.findOne({"ip" : geoipData.query},function(err,doc){
-            if(err){
-              console.error(err);
+  else {
+    console.log("connected to Mongo");
+    Keywords = require(path.join(p_globals._dirname,"../../models/keywords.js"));
+    Aliranks = require(path.join(p_globals._dirname,"../../models/aliranks.js"));
+    btnKeywordMan.addEventListener("click",function(){
+      webPages.append("dashboard:keyword");
+    });
+    btnUpdateRankQueue.addEventListener("click",function(){
+      webPages.append("dashboard:updateRankQueue");
+    });
+    // btnCalc.addEventListener("click",function(){
+    //   webPages.append("dashboard:calc");
+    // });
+    // btnBatchCalc.addEventListener("click",function(){
+    //   webPages.append("dashboard:batchCalc");
+    // });
+    btnGo.addEventListener("click",function(){
+      if(currentPage !== null){
+        currentPage.src = parseUrl(inputUrl.value);
+      }
+    });
+    btnNew.addEventListener("click",function(){
+      webPages.append(inputUrl.value);
+    });
+    btnGetZeroEffectProducts.addEventListener("click",function(){
+      if(currentPage !== null){
+        currentPage.executeJavaScript("__aliTools.getZeroEffectProducts({"+
+      'orderBy: "time",'+
+      'orderModel:	"desc",'+
+      'selected:	0,'+
+      'statisticsType:"day",'+
+      'pageSize : 10,'+
+      'pageNO : 1,'+
+      'time : 170'+
+    "});");
+      }
+    });
+    btnSend.addEventListener("click",function(){
+      if(currentPage !== null){
+        currentPage.executeJavaScript("__aliTools.send()");
+      }
+    });
+    btnDevTools.addEventListener("click",function(){
+      if(currentPage !== null){
+        currentPage.openDevTools();
+      }
+    });
+    btnGetIp.addEventListener("click",function(){
+      request('http://www.ip-api.com/json/?fields=countryCode,query,status', function (error, response, body) {
+        if (!error && response.statusCode == 200) {
+          // console.log(body);
+          var geoipData = JSON.parse(body);
+          console.log(geoipData);
+          if(geoipData.status = "success"){
+            if(geoipData.countryCode === "CN"){
+              console.log("ip地址在中国");
             }
             else{
-              console.log(doc);
+              var pip = db.collection("pip");
+              pip.findOne({"ip" : geoipData.query},function(err,doc){
+                if(err){
+                  console.error(err);
+                }
+                else{
+                  console.log(doc);
+                }
+              })
             }
-          })
+          }
+          else{
+            console.error("get geoip failed!");
+          }
         }
-      }
-      else{
-        console.error("get geoip failed!");
-      }
-    }
-  })
+      })
+    });
+  }
 });
-// db.connect(env.mongo_url, function(err) {
-//   if (err) {
-//     console.log('Unable to connect to Mongo.')
-//     process.exit(1)
-//   }
-//   else {
-//     console.log("connected to Mongo");
-//   }
-// });
 </script>

@@ -166,6 +166,9 @@ var setEventListener = function(newPage,url){
                   else if(prop === "kwId"){
                     insertedDoc["_id"] = docs[i][prop];
                   }
+                  else if(prop === "timeUpdated"){
+                    insertedDoc[prop] = docs[i][prop].toLocaleString();
+                  }
                   else{
                     insertedDoc[prop] = docs[i][prop];
                   }

@@ -209,6 +209,7 @@
           }
         }
         this.updatePubs = function(pubs){
+          console.log(pubs);
           for(var i=0;i<pubs.length;i++){
             var el = document.getElementById(pubs[i]["aliId"]);
             if(el){
@@ -218,19 +219,63 @@
               }
             }
             else{
-              var pubs = document.getElementById(pubs[i]["_id"]+"pubs");
+              var elPubs = document.getElementById(pubs[i]["_id"]+"pubs");
               var pubCon = document.createElement("li");
-              console.log(pubs[i]);
               pubCon.setAttribute("id",pubs[i]["aliId"]);
               var pub = document.createElement("ul");
               pubCon.appendChild(pub);
-              for(var p in pubs[i]){
-                var elp = document.createElement("li");
-                elp.setAttribute("class",p);
-                elp.innerText = p + pubs[i][p];
-                pub.appendChild(elp);
+              // for(var p in pubs[i]){
+              //   var elp = document.createElement("li");
+              //   elp.setAttribute("class",p);
+              //   elp.innerText = p + pubs[i][p];
+              //   pub.appendChild(elp);
+              // }
+              var elAliId = document.createElement("li");
+              elAliId.setAttribute("class","aliId");
+              elAliId.innerText = "服务器ID: " + pubs[i]["aliId"];
+              pub.appendChild(elAliId);
+
+              var elTitle = document.createElement("li");
+              elTitle.setAttribute("class","title");
+              elTitle.innerText = "标题: " + pubs[i]["title"];
+              pub.appendChild(elTitle);
+
+              var elTimeUpdated = document.createElement("li");
+              elTimeUpdated.setAttribute("class","timeUpdated");
+              elTimeUpdated.innerText = "更新时间: " + pubs[i]["timeUpdated"];
+              pub.appendChild(elTimeUpdated);
+
+              var elType = document.createElement("li");
+              elType.setAttribute("class","type");
+              elType.innerText = "类型: " + pubs[i]["type"];
+              pub.appendChild(elType);
+
+              if(pubs[i]["notIn"]){
+                var elNotIn = document.createElement("li");
+                elNotIn.setAttribute("class","notIn");
+                elNotIn.innerText = "没在该范围内: " + pubs[i]["notIn"];
+                pub.appendChild(elNotIn);
               }
-              pubs.appendChild(pubCon);
+              else{
+                var elPn = document.createElement("li");
+                elPn.setAttribute("class","pn");
+                elPn.innerText = "页数: " + pubs[i]["pn"];
+                pub.appendChild(elPn);
+                var elPos = document.createElement("li");
+                elPos.setAttribute("class","pos");
+                elPos.innerText = "位置: " + pubs[i]["pos"];
+                pub.appendChild(elPos);
+                var elPnc = document.createElement("li");
+                elPnc.setAttribute("class","pnc");
+                elPnc.innerText = "页数变化: " + pubs[i]["pnc"];
+                pub.appendChild(elPnc);
+                var elPosc = document.createElement("li");
+                elPosc.setAttribute("class","posc");
+                elPosc.innerText = "位置变化: " + pubs[i]["posc"];
+                pub.appendChild(elPosc);
+              }
+
+              elPubs.appendChild(pubCon);
             }
           }
         }
@@ -282,6 +327,10 @@
       });
       ipcRenderer.on('initPubs', function(event,docs){
         console.log("initPubs",event,docs);
+        keywordsView.updatePubs(docs);
+      });
+      ipcRenderer.on('updatePubs', function(event,docs){
+        console.log("updatePubs",event,docs);
         keywordsView.updatePubs(docs);
       });
       ipcRenderer.on('updateRank', function(event,docs){

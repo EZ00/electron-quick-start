@@ -183,14 +183,19 @@ var setEventListener = function(newPage,url){
         else if(channel === "updateRank"){
           console.log("channel === updateRank");
           console.log(doc);
+          if(updateRankQueue[doc.kw] && updateRankQueue[doc.kw]["state"] !== "stop"){
+            event.srcElement.send("updateError",doc.kw+" is in progress!");
+            return false;
+          }
           updateRankQueue[doc.kw] = {};
           updateRankQueue[doc.kw]["current"] = doc.startPn;
           updateRankQueue[doc.kw]["end"] = doc.endPn;
           updateRankQueue[doc.kw]["state"] = "run";
           updateRankQueue[doc.kw]["kw"] = doc.kw;
-          if(dashboards["updateRankQueue"]){
-            dashboards["updateRankQueue"].send("updateRankQueue",updateRankQueue[doc.kw]);
-          }
+          // if(dashboards["updateRankQueue"]){
+          //   dashboards["updateRankQueue"].send("updateRankQueue",updateRankQueue[doc.kw]);
+          // }
+          event.srcElement.send("updateRankQueue",updateRankQueue[doc.kw]);
           var kw = doc.kw.replace(/ /g,'%2B');
           var options = {
             url: 'http://www.alibaba.com/products/steel%2Btube/7.html',
@@ -296,6 +301,7 @@ var setEventListener = function(newPage,url){
                                     }
                                     else{
                                       console.log(result);
+                                      let inserted = result["ops"][0];
                                     }
                                   })
                                 }
@@ -326,15 +332,18 @@ var setEventListener = function(newPage,url){
                         updateRankQueue[doc.kw]["current"] += 1;
                         if(updateRankQueue[doc.kw]["current"] <= updateRankQueue[doc.kw]["end"]){
                           options.url = 'http://www.alibaba.com/products/'+kw+"/"+updateRankQueue[doc.kw]["current"]+".html";
-                          if(dashboards["updateRankQueue"]){
-                            dashboards["updateRankQueue"].send("updateRankQueue",updateRankQueue[doc.kw]);
-                          }
+                          // if(dashboards["updateRankQueue"]){
+                          //   dashboards["updateRankQueue"].send("updateRankQueue",updateRankQueue[doc.kw]);
+                          // }
+                          event.srcElement.send("updateRankQueue",updateRankQueue[doc.kw]);
                           request(options,cbGetRank);
                         }
                         else{
-                          if(dashboards["updateRankQueue"]){
-                            dashboards["updateRankQueue"].send("updateRankQueue",updateRankQueue[doc.kw]);
-                          }
+                          // if(dashboards["updateRankQueue"]){
+                          //   dashboards["updateRankQueue"].send("updateRankQueue",updateRankQueue[doc.kw]);
+                          // }
+                          updateRankQueue[doc.kw]["state"] = "stop";
+                          event.srcElement.send("updateRankQueue",updateRankQueue[doc.kw]);
                         }
                       }
                     );

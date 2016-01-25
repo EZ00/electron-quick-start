@@ -123,6 +123,20 @@
                 pub.appendChild(notIn);
                 var type = document.createElement("li");
                 pub.appendChild(type);
+                var elLiGetRank = document.createElement("li");
+                pub.appendChild(elLiGetRank);
+                var elBtnGetRank = document.createElement("button");
+                elBtnGetRank.setAttribute("data-kw",children[i]["en"]);
+                elBtnGetRank.setAttribute("data-aliId",children[i]["pubs"][j]["aliId"]);
+                elBtnGetRank.innerHTML = "更新排名";
+                elBtnGetRank.addEventListener("click",function(e){
+                  e.preventDefault();
+                  let data = {};
+                  data.kw = e.target.getAttribute("data-kw");
+                  data.aliId = e.target.getAttribute("data-aliId");
+                  console.log(data);
+                })
+                elliGetRank.appendChild(elBtnGetRank);
                 aliId.innerText = "aliId" + children[i]["pubs"][j]["aliId"];
                 aliId.setAttribute("class","aliId");
                 title.innerText = "标题" + children[i]["pubs"][j]["title"];
@@ -274,6 +288,22 @@
                 elPosc.innerText = "位置变化: " + pubs[i]["posc"];
                 pub.appendChild(elPosc);
               }
+              var elLiGetRank = document.createElement("li");
+              pub.appendChild(elLiGetRank);
+              var elBtnGetRank = document.createElement("button");
+              elBtnGetRank.setAttribute("data-kw",pubs[i]["kw"]);
+              elBtnGetRank.setAttribute("data-kwId",pubs[i]["_id"]);
+              elBtnGetRank.setAttribute("data-aliId",pubs[i]["aliId"]);
+              elBtnGetRank.innerHTML = "更新排名";
+              elBtnGetRank.addEventListener("click",function(e){
+                e.preventDefault();
+                let data = {};
+                data.kw = e.target.getAttribute("data-kw");
+                data.kwId = e.target.getAttribute("data-kwId");
+                data.aliId = e.target.getAttribute("data-aliId");
+                console.log(data);
+              })
+              elLiGetRank.appendChild(elBtnGetRank);
 
               elPubs.appendChild(pubCon);
             }
@@ -325,6 +355,10 @@
         console.log("initKeyword",event,docs);
         keywordsView.appendChildren(docs);
       });
+      ipcRenderer.on('appendChild', function(event,docs){
+        console.log("initKeyword",event,docs);
+        keywordsView.appendChildren(docs);
+      });
       ipcRenderer.on('initPubs', function(event,docs){
         console.log("initPubs",event,docs);
         keywordsView.updatePubs(docs);
@@ -336,6 +370,14 @@
       ipcRenderer.on('updateRank', function(event,docs){
         console.log("updateRank",event,docs);
         keywordsView.updateChildren(docs);
+      });
+      ipcRenderer.on('updateRankQueue', function(event,docs){
+        console.log("updateRankQueue",docs);
+        // keywordsView.updateChildren(docs);
+      });
+      ipcRenderer.on('updateError', function(event,docs){
+        console.log("updateError",docs);
+        // keywordsView.updateChildren(docs);
       });
       ipcRenderer.on("getRankProgress",function(event,doc){
         console.log("getRankProgress",doc);

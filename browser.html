@@ -163,9 +163,9 @@ var setEventListener = function(newPage,url){
                 for(var prop in docs[i]){
                   if(prop === "_id"){
                   }
-                  else if(prop === "kwId"){
-                    insertedDoc["_id"] = docs[i][prop];
-                  }
+                  // else if(prop === "kwId"){
+                  //   insertedDoc["_id"] = docs[i][prop];
+                  // }
                   else if(prop === "timeUpdated"){
                     insertedDoc[prop] = docs[i][prop].toLocaleString();
                   }
@@ -301,7 +301,8 @@ var setEventListener = function(newPage,url){
                                     }
                                     else{
                                       console.log(result);
-                                      let inserted = result["ops"][0];
+                                      data["timeUpdated"] = data["timeUpdated"].toLocaleString();
+                                      event.srcElement.send("updatePubs",[data]);
                                     }
                                   })
                                 }
@@ -321,6 +322,11 @@ var setEventListener = function(newPage,url){
                                     }
                                     else{
                                       console.log(result);
+                                      let inserted = result["ops"];
+                                      for(var index =0;index<inserted.length;index++){
+                                        inserted[index]["timeUpdated"] = inserted[index]["timeUpdated"].toLocaleString();
+                                      }
+                                      event.srcElement.send("updatePubs",inserted);
                                     }
                                   })
                                 }

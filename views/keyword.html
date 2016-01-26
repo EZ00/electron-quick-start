@@ -233,7 +233,7 @@
               }
             }
             else{
-              var elPubs = document.getElementById(pubs[i]["_id"]+"pubs");
+              var elPubs = document.getElementById(pubs[i]["kwId"]+"pubs");
               var pubCon = document.createElement("li");
               pubCon.setAttribute("id",pubs[i]["aliId"]);
               var pub = document.createElement("ul");
@@ -292,7 +292,7 @@
               pub.appendChild(elLiGetRank);
               var elBtnGetRank = document.createElement("button");
               elBtnGetRank.setAttribute("data-kw",pubs[i]["kw"]);
-              elBtnGetRank.setAttribute("data-kwId",pubs[i]["_id"]);
+              elBtnGetRank.setAttribute("data-kwId",pubs[i]["kwId"]);
               elBtnGetRank.setAttribute("data-aliId",pubs[i]["aliId"]);
               elBtnGetRank.innerHTML = "更新排名";
               elBtnGetRank.addEventListener("click",function(e){
@@ -364,7 +364,7 @@
         keywordsView.updatePubs(docs);
       });
       ipcRenderer.on('updatePubs', function(event,docs){
-        console.log("updatePubs",event,docs);
+        console.log("updatePubs",docs);
         keywordsView.updatePubs(docs);
       });
       ipcRenderer.on('updateRank', function(event,docs){

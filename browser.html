@@ -215,14 +215,17 @@ var setEventListener = function(newPage,url){
             // console.log(error);
             // console.log(response);
             if (!error && response.statusCode == 200) {
+              // console.log("enter !error && response.statusCode == 200");
               if (response.headers['content-encoding'] === 'gzip')
                 zlib.gunzip(body, function(err, result) {
+                    // console.log("enter response.headers['content-encoding'] === 'gzip'");
                     if(err) return console.error(err);
                     var rawHTML = result.toString();
                     jsdom.env(
                       rawHTML,
                       function (err, window) {
-                        var productItems = window.document.getElementById("J-m-product-items").children;
+                        // var productItems = window.document.getElementById("J-m-product-items").children;
+                        var productItems = window.document.getElementsByClassName("m-product-item");
                         for(var i=0;i<productItems.length;i++){
                           let errors = [];
                           let data = {};
@@ -257,6 +260,7 @@ var setEventListener = function(newPage,url){
                             errors.push("error:!data.aliId");
                           }
                           let aStitle = productItems[i].querySelector(".stitle").children[1];
+                          // console.log(aStitle.href);
                           if(aStitle && aStitle.href && aStitle.href.indexOf("company_profile")>-1){
                             if(aStitle.href.indexOf(doc.site)>-1){
                               data.siteMatched = true;
@@ -271,6 +275,9 @@ var setEventListener = function(newPage,url){
                           if(data.siteMatched === null){
                             errors.push("data.siteMatched === null");
                           }
+                          console.log(doc.site);
+                          console.log(data.siteMatched);
+                          updateRankQueue[doc.kw]["site"] = aStitle.href;
                           data.pn = updateRankQueue[doc.kw]["current"];
                           data.pos = i+1;
 

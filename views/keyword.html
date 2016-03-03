@@ -83,6 +83,9 @@
             var zh = document.createElement("li");
             var isTarget = document.createElement("li");
             var site = document.createElement("li");
+            var inputSite = document.createElement("input");
+            inputSite.setAttribute("type","text");
+            inputSite.setAttribute("value",children[i]["site"]);
             var tags = document.createElement("li");
             var pids = document.createElement("li");
             var pubs = document.createElement("ol");
@@ -93,7 +96,8 @@
             zh.setAttribute("id",children[i]["_id"]+"zh");
             isTarget.innerText = "是否目标关键词: " + children[i]["isTarget"];
             isTarget.setAttribute("id",children[i]["_id"]+"isTarget");
-            site.innerText = "网址: " + children[i]["site"];
+            site.innerText = "网址: ";
+            site.appendChild(inputSite);
             site.setAttribute("id",children[i]["_id"]+"site");
             tags.innerText = "标签: " + children[i]["tags"].join();
             tags.setAttribute("id",children[i]["_id"]+"tags");

@@ -218,14 +218,17 @@ var setEventListener = function(newPage,url){
               // console.log("enter !error && response.statusCode == 200");
               if (response.headers['content-encoding'] === 'gzip')
                 zlib.gunzip(body, function(err, result) {
-                    // console.log("enter response.headers['content-encoding'] === 'gzip'");
+                    console.log("enter response.headers['content-encoding'] === 'gzip'");
                     if(err) return console.error(err);
                     var rawHTML = result.toString();
+                    // console.log(rawHTML);
                     jsdom.env(
                       rawHTML,
                       function (err, window) {
                         // var productItems = window.document.getElementById("J-m-product-items").children;
-                        var productItems = window.document.getElementsByClassName("m-product-item");
+                        var productItems = window.document.querySelectorAll(".m-product-item");
+                        console.log(productItems.length);
+                        console.log(window.document);
                         for(var i=0;i<productItems.length;i++){
                           let errors = [];
                           let data = {};
@@ -260,7 +263,7 @@ var setEventListener = function(newPage,url){
                             errors.push("error:!data.aliId");
                           }
                           let aStitle = productItems[i].querySelector(".stitle").children[1];
-                          // console.log(aStitle.href);
+                          console.log(aStitle.href+" == "+doc.site);
                           if(aStitle && aStitle.href && aStitle.href.indexOf("company_profile")>-1){
                             if(aStitle.href.indexOf(doc.site)>-1){
                               data.siteMatched = true;

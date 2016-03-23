@@ -29,6 +29,7 @@ var path = require("path");
 var request = require('request');
 var zlib = require('zlib');
 var jsdom = require("jsdom");
+var parse5 = require("parse5");
 const remote = require('electron').remote;
 const p_globals = require("p_globals");
 const env = require(path.join(p_globals._dirname,"../../env.js"));
@@ -570,8 +571,10 @@ db.connect(env.mongo_url, function(err) {
               // console.log(rawHTML);
               jsdom.env(
                 rawHTML,
+                {
+                  "ProcessExternalResources":false
+                },
                 function (err, window) {
-                  // var productItems = window.document.getElementById("J-m-product-items").children;
                   var scripts = window.document.querySelectorAll("script");
                   console.log(scripts);
                   for(var s in scripts){

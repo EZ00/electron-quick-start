@@ -30,6 +30,7 @@ var request = require('request');
 var zlib = require('zlib');
 var jsdom = require("jsdom");
 var parse5 = require("parse5");
+var fs = require("fs");
 const remote = require('electron').remote;
 const p_globals = require("p_globals");
 const env = require(path.join(p_globals._dirname,"../../env.js"));
@@ -42,6 +43,33 @@ const ipcRenderer = require('electron').ipcRenderer;
 
 function hasClass(element, cls) {
     return (' ' + element.className + ' ').indexOf(' ' + cls + ' ') > -1;
+}
+
+// 从字符串fromStr中，位置startPos开始，返回第n层startTag和endTag之间的字符串，不包括tag本身
+// 定义：tag 长度 = 1
+// 从第一层开始
+function getStringBetween(fromStr,startPos,n,startTag,endTag){
+  let depth = 0;
+  // currentPos == i;
+  let nStartPos = -1;
+  let nEndPos = -1;
+  for(let i=startPos;i<fromStr.length;i++){
+    if(fromStr.charAt(i) === startTag){
+      depth += 1;
+      if(depth === n){
+        nStartPos = i+1;
+      }
+    }
+    else if(fromStr.charAt(i) === endTag){
+      if(depth === n){
+        // do not need i-1, because substring will use nEndPos-1
+        nEndPos = i;
+        break;
+      }
+      depth -= 1;
+    }
+  }
+  return fromStr.substring(nStartPos,nEndPos);
 }
 
 ipcRenderer.on('ping', function(event, arg) {
@@ -576,11 +604,18 @@ db.connect(env.mongo_url, function(err) {
                 },
                 function (err, window) {
                   var scripts = window.document.querySelectorAll("script");
-                  console.log(scripts);
+                  // console.log(scripts);
                   for(var s in scripts){
                     var el = scripts.item(s);
-                    if(el.innerHTML.indexOf("page.setPageData") > -1){
-                      console.log(el.innerHTML);
+                    let startPos = el.innerHTML.indexOf("page.setPageData");
+                    if(startPos > -1){
+                      // function getStringBetween(fromStr,startPos,n,startTag,endTag)
+                      // console.log(getStringBetween(el.innerHTML,startPos,1,"(",")"));
+                      var pageDataStr = getStringBetween(el.innerHTML,startPos,1,"(",")");
+                      fs.writeFileSync("searchResult.txt",pageDataStr);
+                      var pageData = JSON.parse(pageDataStr);
+                      console.log(pageData);
+                      break;
                     }
                   }
                 }
